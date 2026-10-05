@@ -175,7 +175,7 @@ function Categories() {
         <span className="eyebrow">Explore</span>
         <h2 className="font-display text-4xl md:text-5xl mt-2">Shop by Category</h2>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 max-w-4xl mx-auto">
         {cats.map((c) => (
           <Link
             key={c.id}

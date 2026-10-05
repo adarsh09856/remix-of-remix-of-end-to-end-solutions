@@ -232,43 +232,38 @@ DO $$ BEGIN
   CREATE POLICY "reviews_public_read" ON public.reviews FOR SELECT USING (status = 'approved');
 EXCEPTION WHEN duplicate_object THEN null; END $$;
 
--- 13. Seed Categories & Products
+-- 13. Seed Categories & Products (Original Takin Mart Lovable Catalog)
 INSERT INTO public.categories (name, slug, description, image_url, sort_order) VALUES
-('Grains & Cereals', 'grains-cereals', 'Heritage Bhutanese red rice, tartary buckwheat, and high-altitude mountain grains grown sustainably.', '/src/assets/c-grains.jpg', 1),
-('Wild Honey', 'wild-honey', 'Raw, unprocessed multi-flora, cordyceps, and stingless-bee Puthka honey from Bhutan''s pristine forests.', '/src/assets/c-honey.jpg', 2),
-('Spices & Condiments', 'spices-condiments', 'High-curcumin Lakadong turmeric, fiery Dalle chillies, mountain ghee, and traditional handmade pickles.', '/src/assets/c-spices.jpg', 3),
-('Dried Foods', 'dried-foods', 'Artisanal avocado and kiwi jams, sun-dried wild shiitake mushrooms, and mountain fruits.', '/src/assets/c-dried.jpg', 4),
-('Tea & Beverages', 'tea-beverages', 'High-grown organic green teas, cordyceps herbal infusions, and traditional Himalayan teas.', '/src/assets/c-tea.jpg', 5),
-('Wellness', 'wellness', 'Pure Himalayan shilajit, organic black turmeric, chirata, beetroot, and vitality herbal supplements.', '/src/assets/c-wellness.jpg', 6),
-('Gift Hampers', 'gift-hampers', 'Curated gift collections of authentic Bhutanese agro and wellness treasures for discerning recipients.', '/src/assets/c-gifts.jpg', 7)
+('Handicrafts', 'handicrafts', 'Sacred textiles, turned burl woodcraft, and artisan metalwork certified by the Handicraft Association of Bhutan.', '/src/assets/c-gifts.jpg', 1),
+('Organic Products', 'organic-products', 'Heritage grains, Paro red rice, black cardamom, and certified organic mountain harvests.', '/src/assets/c-grains.jpg', 2),
+('Traditional Foods', 'traditional-foods', 'Authentic Bhutanese Momo Chutney, mountain timur pepper, sun-dried chili condiments, and buckwheat noodles.', '/src/assets/c-spices.jpg', 3),
+('Wellness & Herbal Products', 'wellness-herbal', 'Pure Himalayan raw wild honey, certified Lunana cordyceps sinensis, and high-altitude loose-leaf teas.', '/src/assets/c-wellness.jpg', 4),
+('Gifts & Souvenirs', 'gifts-souvenirs', 'Bumthang Yathra bags, hand-turned wooden Dappa bowls, thangkas, and consecrated miniature Buddhist statues.', '/src/assets/c-gifts.jpg', 5)
 ON CONFLICT (slug) DO UPDATE SET
   name = EXCLUDED.name,
   description = EXCLUDED.description,
   image_url = EXCLUDED.image_url,
   sort_order = EXCLUDED.sort_order;
 
--- Remove all legacy placeholder products if present
+-- Remove non-authentic / Jinlab / legacy placeholder products if present
 DELETE FROM public.products WHERE slug NOT IN (
-  'jinlab-golden-trio-capsules',
-  'jinlab-lakadong-turmeric-powder',
-  'jinlab-bhutan-ghee',
-  'jinlab-dalle-dry-fish-pickle',
-  'jinlab-cordyceps-honey',
-  'jinlab-himalayan-cordyceps-herbal-tea',
-  'jinlab-dalle-garlic-pickle',
-  'jinlab-beetroot-capsules',
-  'jinlab-fire-balls-dalle-paste-pickle',
-  'jinlab-avocado-jam',
-  'jinlab-chirata-detox-capsules',
-  'jinlab-organic-turmeric-capsules',
-  'jinlab-natural-red-kiwi-jam',
-  'jinlab-organic-black-turmeric-capsules',
-  'jinlab-premium-multi-flora-honey',
-  'jinlab-bhutanese-shilajit',
-  'jinlab-stingless-bee-puthka-honey',
-  'jinlab-black-ginger-capsules',
-  'jinlab-chirata-capsules'
-) OR name ILIKE '%sichuan%'
+  'bhutan-pure-wild-honey',
+  'traditional-bhutanese-momo-chutney',
+  'organic-red-rice-bhutan',
+  'organic-black-cardamom-bhutan',
+  'bhutan-green-tea-tin',
+  'bumthang-yathra-handwoven-bag',
+  'turned-wooden-dappa-bowl',
+  'certified-lunana-wild-cordyceps',
+  'himalayan-buckwheat-flour',
+  'highland-finger-millet',
+  'sun-dried-forest-shiitake',
+  'cold-pressed-mustard-oil',
+  'traditional-suja-butter-tea',
+  'sun-dried-organic-red-chilies'
+) OR slug LIKE 'jinlab-%'
+  OR name ILIKE '%jinlab%'
+  OR name ILIKE '%sichuan%'
   OR name ILIKE '%botanical%'
   OR name ILIKE '%mushroom medley%'
   OR name ILIKE '%pure agro%'
@@ -279,32 +274,37 @@ DELETE FROM public.products WHERE slug NOT IN (
   OR name ILIKE '%kingless%'
   OR name ILIKE '%traditional bhutanese dho%';
 
--- Insert Jinlab Authentic Products
-INSERT INTO public.products (name, slug, tagline, description, price_inr, unit, image_url, badge, stock, origin, is_active, category_id) VALUES
-('Golden Trio Capsules', 'jinlab-golden-trio-capsules', 'Turmeric · Ginger · Black Pepper blend', 'Synergistic botanical blend of organic Lakadong turmeric, highland ginger, and black pepper. Formulated to enhance bioavailability and provide daily anti-inflammatory and antioxidant support. Grown in carbon-negative Bhutan.', 2100, '60 capsules', '/products/golden-trio-capsules-poster.png', 'New', 45, 'Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'wellness')),
-('Organic Lakadong Turmeric Powder', 'jinlab-lakadong-turmeric-powder', 'High curcumin content 7–9% · Certified organic', 'Pure, high-potency Lakadong turmeric powder cultivated organically in the mineral-rich soils of Bhutan. Renowned for its exceptionally high curcumin content (7–9%) and vibrant golden color.', 399, '250g jar', '/products/lakadong-turmeric-powder-poster.png', 'New', 60, 'Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'spices-condiments')),
-('Traditional Bhutan Ghee', 'jinlab-bhutan-ghee', 'Pure Himalayan ghee · Rich in A2 Beta-Casein', 'Hand-churned Himalayan butter rendered into aromatic, golden ghee using age-old Bhutanese dairy traditions. Naturally rich in A2 beta-casein, essential fat-soluble vitamins, and healthy omega fatty acids.', 1650, '500g jar', '/products/bhutan-ghee-poster.png', 'New', 35, 'Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'spices-condiments')),
-('Dalle Dry Fish Pickle', 'jinlab-dalle-dry-fish-pickle', 'A timeless Bhutanese favourite', 'Authentic Bhutanese artisan pickle combining fiery round Dalle chillies with traditionally cured dry fish, cold-pressed mustard oil, and mountain spices. Robust and savory.', 480, '200 g', '/products/jinlab-dalle-dry-fish-pickle.png', NULL, 40, 'Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'spices-condiments')),
-('Jinlab Cordyceps Honey', 'jinlab-cordyceps-honey', 'Pure natural premium honey with cordyceps', 'Raw Himalayan wildflower honey masterfully infused with authentic high-altitude Cordyceps Sinensis. An exquisite vitality tonic supporting immunity, stamina, and respiratory health.', 1490, '250 g', '/products/jinlab-cordyceps-honey.png', 'Premium', 25, 'Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'wild-honey')),
-('Himalayan Cordyceps Herbal Tea', 'jinlab-himalayan-cordyceps-herbal-tea', 'Premium herbs, sustainably sourced', 'A restorative herbal infusion blending wild Cordyceps Sinensis with Bhutanese highland herbs. Naturally caffeine-free, offering a soothing, earthy finish. Packed in 20 sachets.', 890, '30 g', '/products/jinlab-cordyceps-tea-front.png', 'New', 50, 'Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'tea-beverages')),
-('Dalle Garlic Pickle', 'jinlab-dalle-garlic-pickle', 'A timeless Bhutanese favourite', 'Whole garlic cloves pickled with native Dalle cherry chillies in mustard oil and Himalayan aromatic seeds. A quintessential accompaniment to red rice and hearty stews.', 350, '200 g', '/products/jinlab-dalle-garlic-pickle.png', NULL, 55, 'Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'spices-condiments')),
-('Jinlab Beetroot Capsules', 'jinlab-beetroot-capsules', 'Natural energy and vitality support', 'Pure organic Bhutanese beetroot dehydrated at low temperatures and encapsulated. Rich in natural dietary nitrates, iron, and antioxidants to support endurance and healthy blood flow.', 790, '60 caps', '/products/jinlab-beetroot-capsules-front.png', 'New', 45, 'Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'wellness')),
-('Fire Balls Dalle Paste Pickle', 'jinlab-fire-balls-dalle-paste-pickle', 'Hot spicy cherry pepper paste', 'Crushed fiery Dalle cherry peppers slow-cooked into an intense spicy paste with Himalayan spices. The ultimate condiment for heat-lovers, momos, and traditional noodle soups.', 450, '200 g', '/products/jinlab-fire-balls-dalle-paste-pickle.png', 'Hot', 35, 'Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'spices-condiments')),
-('Jinlab Avocado Jam', 'jinlab-avocado-jam', '60% pure Bhutanese avocados · Artisanal fruit spread', 'Artisanal, nutrient-dense fruit spread crafted from 60% fresh subtropical avocados grown organically in Tsirang, Bhutan. Mildly sweet, smooth, and delicious on sourdough toast.', 2500, '220 g', '/products/avocado-jam-poster.png', NULL, 30, 'Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'dried-foods')),
-('Chirata Detox Capsules', 'jinlab-chirata-detox-capsules', 'The extra from the Himalayas', 'High-potency Swertia Chirayita extract encapsulated for convenient daily detox. Revered in traditional Sowa Rigpa medicine for liver cleansing, bile stimulation, and immune support.', 990, '60 caps', '/products/jinlab-chirata-detox-capsules.png', 'Premium', 40, 'Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'wellness')),
-('Organic Turmeric Capsules', 'jinlab-organic-turmeric-capsules', 'Curcuma Longa — pure Bhutanese turmeric', 'Pure single-origin Curcuma Longa grown in the pristine valleys of Bhutan. 100% plant-based pullulan capsules designed for joint flexibility, radiant skin, and gut health.', 720, '60 caps', '/products/jinlab-organic-turmeric-capsules.png', 'Organic', 60, 'Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'wellness')),
-('Natural Red Kiwi Jam', 'jinlab-natural-red-kiwi-jam', 'Homemade red kiwi jam from Bhutan', 'Small-batch preserve made from rare red-fleshed kiwis grown in southern Bhutan. Naturally rich in vitamin C and polyphenols with an exquisite berry-like tang.', 560, '220 g', '/products/jinlab-natural-red-kiwi-jam.png', NULL, 40, 'Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'dried-foods')),
-('Organic Black Turmeric Capsules', 'jinlab-organic-black-turmeric-capsules', 'Cucurma Caesia — the rare black turmeric', 'The rarest Himalayan rhizome — Cucurma Caesia with its dark bluish-black interior. Prized for its intense anti-inflammatory properties, respiratory support, and high antioxidant levels.', 1290, '60 caps', '/products/jinlab-organic-black-turmeric-capsules.png', 'Rare', 30, 'Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'wellness')),
-('Premium Multi Flora Honey', 'jinlab-premium-multi-flora-honey', 'Pure, raw and unfiltered — native Apis cerana bees', 'Raw, unprocessed mountain honey gathered by native Apis cerana bees foraging on wildflowers in the high-altitude forests of Bumthang. Unfiltered, enzyme-rich, and pure.', 850, '250g jar', '/products/multi-flora-honey-poster.png', 'Bestseller', 65, 'Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'wild-honey')),
-('Pure Himalayan Bhutanese Shilajit', 'jinlab-bhutanese-shilajit', 'Rich in fulvic & humic acids · High-altitude sourced', 'Pure grade-A Himalayan Shilajit resin harvested at over 4,500m elevation. Purified using traditional herbal decoctions, containing over 85 trace minerals and 70%+ fulvic acid.', 1700, '20 g', '/products/bhutanese-shilajit-poster.png', 'Premium', 35, 'Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'wellness')),
-('Stingless-Bee Puthka Honey', 'jinlab-stingless-bee-puthka-honey', 'Rare Puthka Honey · High-altitude, antioxidant-rich', 'The legendary Puthka honey from Bhutan''s stingless Meliponini bees. Tangy, slightly citrusy, and renowned for extraordinary antimicrobial and tissue healing properties.', 2500, '100 ml', '/products/stingless-bee-puthka-honey-poster.png', 'Rare', 20, 'Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'wild-honey')),
-('Black Ginger Capsules', 'jinlab-black-ginger-capsules', 'Natural energy & vitality — carbon-negative Bhutan', 'Kaempferia Parviflora rhizomes sustainably cultivated in Bhutan''s pristine soil. Prized across the Himalayas for boosting energy, stamina, metabolic health, and physical endurance.', 2500, '60 caps', '/products/black-ginger-capsules-poster.png', NULL, 40, 'Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'wellness')),
-('Jinlab Chirata Capsules', 'jinlab-chirata-capsules', 'Nature''s bitter power for complete wellness', 'Pure Swertia Chirayita whole-herb powder capsules. Harness the traditional bitter power of the Himalayas to help regulate metabolism, support digestion, and purify the blood.', 890, '60 caps', '/products/jinlab-chirata-capsules.png', 'New', 50, 'Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'wellness'))
+-- Remove non-authentic categories
+DELETE FROM public.categories WHERE slug NOT IN (
+  'handicrafts',
+  'organic-products',
+  'traditional-foods',
+  'wellness-herbal',
+  'gifts-souvenirs'
+);
+
+-- Insert Authentic Takin Mart Products
+INSERT INTO public.products (name, slug, tagline, description, price_inr, compare_at_inr, unit, image_url, badge, stock, origin, is_active, category_id) VALUES
+('Bhutan Pure Wild Honey (500g Jar)', 'bhutan-pure-wild-honey', 'Cold-extracted raw Himalayan cliff and wildflower honey', 'Featured in our Tshechu harvest collection. Harvested from wild bees foraging in pristine alpine flora at 2,800m altitude in Bumthang. Unfiltered, unpasteurized, and rich in natural mountain propolis and enzymes.', 2200, 2600, '500g jar', '/src/assets/p-honey.jpg', 'Tshechu Special', 45, 'Bumthang Valley, Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'wellness-herbal')),
+('Traditional Bhutanese Momo Chutney (350g Jar)', 'traditional-bhutanese-momo-chutney', 'Fiery Druk red chilies, roasted garlic, and Himalayan mountain spices', 'The authentic taste of Bhutan''s kitchens, as featured in our Tshechu harvest flyer. Slow-cooked with heritage dried red chilies, native mountain timur (Sichuan pepper), roasted garlic, and Himalayan rock salt. Pairs perfectly with steamed dumplings, roasted meats, or rice dishes.', 650, 800, '350g jar', '/src/assets/p-chili-sauce.jpg', 'Best Seller', 60, 'Thimphu, Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'traditional-foods')),
+('Organic Bhutanese Red Rice (1kg Pouch)', 'organic-red-rice-bhutan', 'Glacier-irrigated heritage whole grain from Paro Valley', 'Shown prominently in our harvest flyer. Grown in mineral-dense soils fed by fresh snowmelt from Mt. Jomolhari. Semi-milled to leave behind the nutrient-rich red bran layer with high dietary fiber, iron, and a distinct nutty flavor.', 750, 900, '1kg pouch', '/src/assets/p-red-rice.jpg', '100% Organic', 80, 'Paro Valley, Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'organic-products')),
+('Organic Himalayan Black Cardamom (100g Pouch)', 'organic-black-cardamom-bhutan', 'Sun-dried smoky pods hand-harvested in subtropical Tsirang', 'Featured in our Tshechu harvest collection. Cultivated naturally under forest canopies in Tsirang and slowly wood-smoke dried over sweet hardwood embers. Imparts deep camphoraceous, woody complexity to traditional curries, stews, and warming herbal teas.', 540, 650, '100g pouch', '/src/assets/p-timur.jpg', 'Aromatic Spice', 50, 'Tsirang, Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'organic-products')),
+('Bhutan High-Altitude Green Tea (100g Emerald Tin)', 'bhutan-green-tea-tin', 'First-flush whole-leaf tea cultivated above the clouds in Trongsa', 'Presented in the distinctive emerald gift tin shown on our flyer. Handpicked from heritage bushes in Samdrup Choling, Trongsa at 2,200m elevation. Gently steamed and pan-fired to yield a delicate, sweet vegetal cup rich in antioxidants.', 1200, 1450, '100g tin', '/src/assets/p-green-tea.jpg', 'Emerald Tin', 70, 'Trongsa, Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'wellness-herbal')),
+('Bumthang Yathra Handwoven Heritage Bag', 'bumthang-yathra-handwoven-bag', 'Ancestral geometric wool textile woven on Bumthang pedal looms', 'Shown on the left of our Tshechu harvest flyer. Crafted by master weavers in Chumey Valley from 100% pure Himalayan virgin wool, naturally dyed with walnut bark, indigo, and madder root. Finished with durable leather handles and brass fixtures.', 8500, 9800, 'bag', '/src/assets/p-gift-hamper.jpg', 'Handcrafted', 18, 'Bumthang Valley, Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'handicrafts')),
+('Turned Wooden Dappa Bowl & Cup Set', 'turned-wooden-dappa-bowl', 'Master Shagzo woodcraft turned from high-altitude maple burl', 'Carved and hand-turned by traditional woodturners in Trashiyangtse. The airtight nesting lids fit with such precise friction that Bhutanese travelers historically used them to carry hot buttered food without leaking.', 8800, 10500, 'set', '/src/assets/p-gift-hamper.jpg', 'Master Art', 22, 'Trashiyangtse, Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'gifts-souvenirs')),
+('Certified Genuine Wild Cordyceps Sinensis (Grade A - 10g)', 'certified-lunana-wild-cordyceps', 'Ethically gathered above 4,200m in Lunana with official government seal', 'The crown jewel of Himalayan agro-wellness. Wild-harvested by nomadic yak herders in the alpine heights of Lunana. Graded, verified, and sealed by the Department of Forests & Park Services, Royal Government of Bhutan.', 52000, 60000, '10g tin', '/src/assets/p-cordyceps.jpg', 'Rare Alpine', 12, 'Lunana, Gasa, Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'wellness-herbal')),
+('Himalayan Tartary Buckwheat Flour (1kg)', 'himalayan-buckwheat-flour', 'Stone-ground ancient grain from Bumthang Valley', 'Nutrient-dense, low-GI whole grain flour stone-milled in Bumthang. High in rutin, plant-based protein, and fiber. Ideal for traditional Himalayan buckwheat noodles (Puta) and wholesome pancakes.', 320, 400, '1kg pouch', '/src/assets/p-buckwheat.jpg', 'Organic', 75, 'Bumthang, Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'organic-products')),
+('Highland Finger Millet (1kg)', 'highland-finger-millet', 'Traditional calcium-rich Himalayan supergrain', 'Ancient heritage millet cultivated on terraced slopes in eastern Bhutan. Exceptionally high in calcium, iron, and dietary fiber. Naturally gluten-free and nutritious.', 280, 350, '1kg pouch', '/src/assets/p-millet.jpg', 'Supergrain', 60, 'Trashigang, Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'organic-products')),
+('Sun-Dried Forest Shiitake Mushrooms (150g)', 'sun-dried-forest-shiitake', 'Wild-foraged forest oak shiitake from Bumthang', 'Oak-log grown forest shiitake mushrooms harvested and sun-cured in alpine Bumthang. Deep earthy umami flavor, rich in beta-glucans for soups and braises.', 650, 780, '150g pack', '/src/assets/p-shiitake.jpg', 'Wild', 45, 'Bumthang, Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'organic-products')),
+('Cold-Pressed Bhutanese Mustard Oil (500ml)', 'cold-pressed-mustard-oil', 'Single-origin wood-pressed mustard oil with pungent aroma', 'Traditional wood-pressed kachi-ghani mustard oil pressed from heritage seeds grown in Punakha Valley. High smoke point and authentic robust punch essential to Himalayan cooking.', 380, 450, '500ml bottle', '/src/assets/p-mustard-oil.jpg', 'Cold-Pressed', 55, 'Punakha, Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'traditional-foods')),
+('Traditional Suja Butter Tea Brick (250g)', 'traditional-suja-butter-tea', 'Fermented mountain tea brick for authentic Bhutanese butter tea', 'Compressed fermented whole tea brick cured according to centuries-old Bhutanese monastery methods. Churned with yak butter and salt to create nourishing, warming Suja.', 450, 550, '250g brick', '/src/assets/p-suja.jpg', 'Heritage', 50, 'Trongsa, Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'traditional-foods')),
+('Sun-Dried Organic Bhutanese Red Chilies (200g)', 'sun-dried-organic-red-chilies', 'Naturally roof-dried fiery chilies from Punakha', 'Whole sun-dried red chilies cured on traditional farmhouse roofs across Punakha. The irreplaceable soul of Ema Datshi and Bhutanese culinary heritage.', 340, 420, '200g pouch', '/src/assets/p-dried-chilies.jpg', 'Organic', 65, 'Punakha, Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'traditional-foods'))
 ON CONFLICT (slug) DO UPDATE SET
   name = EXCLUDED.name,
   tagline = EXCLUDED.tagline,
   description = EXCLUDED.description,
   price_inr = EXCLUDED.price_inr,
+  compare_at_inr = EXCLUDED.compare_at_inr,
   unit = EXCLUDED.unit,
   image_url = EXCLUDED.image_url,
   badge = EXCLUDED.badge,

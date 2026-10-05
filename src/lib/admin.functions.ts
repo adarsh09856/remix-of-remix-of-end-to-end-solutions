@@ -166,16 +166,20 @@ export const adminListCategories = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
+    const { FALLBACK_CATEGORIES } = await import("./products.functions");
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { data, error } = await supabaseAdmin.from("categories").select("*").order("sort_order");
       if (!error && data && data.length > 0) {
-        return data;
+        const authenticCatSlugs = new Set(FALLBACK_CATEGORIES.map((c) => c.slug));
+        const hasLegacy = data.some((c: any) => !authenticCatSlugs.has(c.slug));
+        if (!hasLegacy) {
+          return data;
+        }
       }
     } catch (e) {
       // Fall through to fallback categories
     }
-    const { FALLBACK_CATEGORIES } = await import("./products.functions");
     return FALLBACK_CATEGORIES;
   });
 
