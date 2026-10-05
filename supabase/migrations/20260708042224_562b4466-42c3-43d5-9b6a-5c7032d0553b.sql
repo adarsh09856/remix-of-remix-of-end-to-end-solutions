@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "admins manage categories" ON public.categories;

@@ -1,0 +1,35 @@
+GRANT SELECT ON public.products TO anon, authenticated;
+GRANT SELECT ON public.categories TO anon, authenticated;
+GRANT SELECT ON public.app_settings TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.cart_items TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.orders TO authenticated;
+GRANT SELECT, INSERT ON public.order_items TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.addresses TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.profiles TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.wishlist TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.reviews TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.notifications TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.coupons TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.coupon_redemptions TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.inventory_movements TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.admin_audit_log TO authenticated;
+GRANT SELECT ON public.user_roles TO authenticated;
+
+GRANT ALL ON public.products TO service_role;
+GRANT ALL ON public.categories TO service_role;
+GRANT ALL ON public.app_settings TO service_role;
+GRANT ALL ON public.cart_items TO service_role;
+GRANT ALL ON public.orders TO service_role;
+GRANT ALL ON public.order_items TO service_role;
+GRANT ALL ON public.addresses TO service_role;
+GRANT ALL ON public.profiles TO service_role;
+GRANT ALL ON public.wishlist TO service_role;
+GRANT ALL ON public.reviews TO service_role;
+GRANT ALL ON public.notifications TO service_role;
+GRANT ALL ON public.coupons TO service_role;
+GRANT ALL ON public.coupon_redemptions TO service_role;
+GRANT ALL ON public.inventory_movements TO service_role;
+GRANT ALL ON public.admin_audit_log TO service_role;
+GRANT ALL ON public.user_roles TO service_role;
+
+ALTER TABLE public.orders ALTER COLUMN ship_country SET DEFAULT 'Bhutan';
