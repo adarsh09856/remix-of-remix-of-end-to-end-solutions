@@ -600,7 +600,22 @@ export const listCategories = createServerFn({ method: "GET" }).handler(async ()
   try {
     const { query } = await import("@/lib/db.server");
     const rows = await query("SELECT id, name, slug, description, image_url, sort_order FROM categories ORDER BY sort_order ASC");
-    if (rows && rows.length > 0) return rows;
+    if (rows && rows.length > 0) {
+      const result: typeof FALLBACK_CATEGORIES = [];
+      for (const fallback of FALLBACK_CATEGORIES) {
+        const found = rows.find((r: any) => r.slug === fallback.slug);
+        if (found) {
+          result.push({
+            ...fallback,
+            ...found,
+            image_url: found.image_url || fallback.image_url,
+          });
+        } else {
+          result.push(fallback);
+        }
+      }
+      return result;
+    }
   } catch {
     // Local PostgreSQL table not yet populated, use authentic catalog
   }

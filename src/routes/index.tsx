@@ -7,7 +7,7 @@ import { ArrowRight, Leaf, ShieldCheck, Truck, Sprout } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
 import heroProducts from "@/assets/hero-products.png";
 import farmer from "@/assets/farmer.jpg";
-import { resolveAsset } from "@/lib/asset-map";
+import { resolveAsset, resolveCategoryAsset } from "@/lib/asset-map";
 
 const categoriesQuery = () =>
   queryOptions({ queryKey: ["categories"], queryFn: () => listCategories() });
@@ -172,8 +172,8 @@ function Categories() {
   return (
     <section className="container-page py-20">
       <div className="text-center max-w-xl mx-auto mb-12">
-        <span className="eyebrow">Explore</span>
-        <h2 className="font-display text-4xl md:text-5xl mt-2">Shop by Category</h2>
+        <span className="eyebrow uppercase tracking-[0.2em] text-xs font-semibold text-muted-foreground">Explore</span>
+        <h2 className="font-display text-4xl md:text-5xl mt-2 text-foreground">Shop by Category</h2>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-4 lg:gap-6 max-w-6xl mx-auto">
         {cats.map((c) => (
@@ -181,14 +181,19 @@ function Categories() {
             key={c.id}
             to="/category/$slug"
             params={{ slug: c.slug }}
-            className="group flex flex-col items-center text-center"
+            className="group flex flex-col items-center text-center transition-transform hover:-translate-y-1"
           >
-            <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full overflow-hidden bg-secondary border-2 border-border/70 group-hover:border-primary group-hover:scale-105 transition-all shadow-sm">
-              {c.image_url && (
-                <img src={resolveAsset(c.image_url)} alt={c.name} loading="lazy" className="h-full w-full object-cover" />
-              )}
+            <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden bg-[#FAF6F0] p-1 border border-[#E8E2D7] group-hover:border-primary group-hover:shadow-md transition-all shadow-sm flex items-center justify-center">
+              <img
+                src={resolveCategoryAsset(c.slug, c.image_url)}
+                alt={c.name}
+                loading="lazy"
+                className="h-full w-full object-cover rounded-full group-hover:scale-105 transition-transform duration-500"
+              />
             </div>
-            <div className="mt-3 text-xs sm:text-sm font-medium leading-tight group-hover:text-primary transition-colors">{c.name}</div>
+            <div className="mt-3.5 text-xs sm:text-sm font-medium text-foreground leading-snug group-hover:text-primary transition-colors">
+              {c.name}
+            </div>
           </Link>
         ))}
       </div>

@@ -44,6 +44,38 @@ const map: Record<string, string> = {
   "/src/assets/c-gifts.jpg": cGifts,
 };
 
+export const categoryAssetBySlug: Record<string, string> = {
+  "grains-cereals": cGrains,
+  "wild-honey": cHoney,
+  "spices-condiments": cSpices,
+  "dried-foods": cDried,
+  "tea-beverages": cTea,
+  "wellness": cWellness,
+  "gift-hampers": cGifts,
+  "handicrafts": cGifts,
+  "organic-products": cGrains,
+  "traditional-foods": cSpices,
+  "wellness-herbal": cWellness,
+  "gifts-souvenirs": cGifts,
+  "c-grains": cGrains,
+  "c-honey": cHoney,
+  "c-spices": cSpices,
+  "c-dried": cDried,
+  "c-tea": cTea,
+  "c-wellness": cWellness,
+  "c-gifts": cGifts,
+};
+
+export function resolveCategoryAsset(slug?: string, url?: string | null): string {
+  if (slug && categoryAssetBySlug[slug]) return categoryAssetBySlug[slug];
+  if (url && map[url]) return map[url];
+  if (url) {
+    const filename = url.split("/").pop()?.replace(/\.[^.]+$/, "");
+    if (filename && categoryAssetBySlug[filename]) return categoryAssetBySlug[filename];
+  }
+  return resolveAsset(url) || cGrains;
+}
+
 export function resolveAsset(url?: string | null): string | undefined {
   if (!url) return undefined;
   if (url.startsWith("http")) return url;
