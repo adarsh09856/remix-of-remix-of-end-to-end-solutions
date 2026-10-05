@@ -738,7 +738,7 @@ export const listCategories = createServerFn({ method: "GET" }).handler(async ()
 export const listProducts = createServerFn({ method: "GET" })
   .inputValidator((d: { categorySlug?: string; limit?: number } | undefined) => d ?? {})
   .handler(async ({ data }) => {
-    const effectiveSlug = data.categorySlug ? (CATEGORY_ALIASES[data.categorySlug] || data.categorySlug) : undefined;
+    const effectiveSlug = data?.categorySlug ? (CATEGORY_ALIASES[data.categorySlug] || data.categorySlug) : undefined;
     try {
       const { query } = await import("@/lib/db.server");
       let sql = `
@@ -753,7 +753,7 @@ export const listProducts = createServerFn({ method: "GET" })
         sql += ` AND c.slug = $${params.length}`;
       }
       sql += ` ORDER BY p.created_at DESC`;
-      if (data.limit) {
+      if (data?.limit) {
         params.push(data.limit);
         sql += ` LIMIT $${params.length}`;
       }
@@ -768,7 +768,7 @@ export const listProducts = createServerFn({ method: "GET" })
     if (effectiveSlug) {
       list = list.filter((p) => p.categories?.slug === effectiveSlug);
     }
-    if (data.limit) {
+    if (data?.limit) {
       list = list.slice(0, data.limit);
     }
     return list;
