@@ -731,6 +731,52 @@ export const listCategories = createServerFn({ method: "GET" }).handler(async ()
   return FALLBACK_CATEGORIES;
 });
 
+async function syncAuthenticCatalog(supabase: any) {
+  try {
+    const legacySlugs = [
+      "sichuan-red-peppercorn",
+      "takin-botanical-elixir",
+      "raw-himalayan-mushroom-medley",
+      "takin-pure-agro-spice",
+      "wild-ginger-capsules",
+      "takin-shilajit-capsules",
+      "takin-cordyceps-honey",
+      "chirata-herbal-capsules"
+    ];
+    for (const slug of legacySlugs) {
+      await supabase.from("products").update({ is_active: false }).eq("slug", slug);
+    }
+
+    for (const cat of FALLBACK_CATEGORIES) {
+      await supabase.from("categories").upsert({
+        name: cat.name,
+        slug: cat.slug,
+        description: cat.description,
+        image_url: cat.image_url,
+        sort_order: cat.sort_order,
+      }, { onConflict: "slug" });
+    }
+
+    for (const p of FALLBACK_PRODUCTS) {
+      await supabase.from("products").upsert({
+        name: p.name,
+        slug: p.slug,
+        tagline: p.tagline,
+        description: p.description,
+        price_inr: p.price_inr,
+        unit: p.unit,
+        image_url: p.image_url,
+        badge: p.badge,
+        stock: p.stock ?? 50,
+        origin: p.region_of_origin || "Bhutan",
+        is_active: true,
+      }, { onConflict: "slug" });
+    }
+  } catch (e) {
+    // Non-fatal background sync
+  }
+}
+
 export const listProducts = createServerFn({ method: "GET" })
   .inputValidator((d: { categorySlug?: string; limit?: number } | undefined) => d ?? {})
   .handler(async ({ data }) => {
@@ -752,7 +798,23 @@ export const listProducts = createServerFn({ method: "GET" })
         }
         if (data.limit) q = q.limit(data.limit);
         const { data: rows, error } = await q;
-        if (!error && rows && rows.length > 0) return rows;
+        if (!error && rows && rows.length > 0) {
+          const hasLegacy = rows.some((r: any) =>
+            r.slug.includes("sichuan") ||
+            r.slug.includes("botanical-elixir") ||
+            r.slug.includes("mushroom-medley") ||
+            r.slug.includes("pure-agro") ||
+            r.name.includes("Sichuan") ||
+            r.name.includes("Botanical Elixir") ||
+            r.name.includes("Mushroom Medley")
+          );
+
+          if (!hasLegacy) {
+            return rows;
+          }
+
+          syncAuthenticCatalog(supabase).catch(() => {});
+        }
       } catch {
         // Fall through to fallback
       }
