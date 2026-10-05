@@ -3,28 +3,32 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { brokeredPreviewStorage } from './previewAuthStorage';
 
-function createSupabaseClient() {
-  // Use import.meta.env for client-side (Vite build-time replacement)
-  // Fall back to process.env for SSR (server-side rendering)
-  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-  const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
+const DEFAULT_SUPABASE_URL = "https://sjujtwkzwkwkjcqjslvm.supabase.co";
+const DEFAULT_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqdWp0d2t6d2t3a2pjcWpzbHZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4ODAyOTksImV4cCI6MjA5NzQ1NjI5OX0.A1xpQZ_spTCPcNlQIfpW8hJWB7eWcRqm0HLKzH1X3Jg";
 
-  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-    const missing = [
-      ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
-      ...(!SUPABASE_PUBLISHABLE_KEY ? ['SUPABASE_PUBLISHABLE_KEY'] : []),
-    ];
-    const message = `Missing Supabase / PostgreSQL environment variable(s): ${missing.join(', ')}. Please configure your .env file or aaPanel database settings.`;
-    console.error(`[Supabase] ${message}`);
-    throw new Error(message);
+class ServerWebSocketStub {}
+
+function getRealtimeTransport() {
+  if (typeof window !== 'undefined' && typeof window.WebSocket !== 'undefined') {
+    return window.WebSocket;
   }
+  return ServerWebSocketStub as any;
+}
+
+function createSupabaseClient() {
+  const env = typeof process !== 'undefined' ? process.env : {} as any;
+  const SUPABASE_URL = import.meta.env?.VITE_SUPABASE_URL || env?.SUPABASE_URL || DEFAULT_SUPABASE_URL;
+  const SUPABASE_PUBLISHABLE_KEY = import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || env?.SUPABASE_PUBLISHABLE_KEY || DEFAULT_SUPABASE_KEY;
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: {
       storage: brokeredPreviewStorage(),
       persistSession: true,
       autoRefreshToken: true,
-    }
+    },
+    realtime: {
+      transport: getRealtimeTransport(),
+    },
   });
 }
 
