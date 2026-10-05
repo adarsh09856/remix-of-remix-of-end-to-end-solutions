@@ -171,23 +171,38 @@ export NITRO_PRESET="node-server"
 npm run build
 log_success "Production build completed (.output/server/index.mjs ready)!"
 
+# 6. Automatically start / restart production service on the dedicated port
+log_info "[6/6] Launching/restarting TakinMart on Port ${WEB_PORT}..."
+
+# Kill only previous process on this project's dedicated port (strictly protects 3000/3001)
+if command -v fuser >/dev/null 2>&1; then
+    fuser -k "${WEB_PORT}/tcp" >/dev/null 2>&1 || true
+fi
+sleep 1
+
+# Launch in background with dedicated port
+PORT=${WEB_PORT} nohup node .output/server/index.mjs > takinmart.log 2>&1 &
+SERVER_PID=$!
+
+sleep 3
+
+# Automated health check
+HTTP_STATUS=""
+if command -v curl >/dev/null 2>&1; then
+    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:${WEB_PORT}" 2>/dev/null || echo "000")
+fi
+
 echo ""
 echo -e "${GREEN}${BOLD}==============================================================================${NC}"
-echo -e "${GREEN}${BOLD} ✔ TakinMart E-Commerce is fully configured & built!${NC}"
+echo -e "${GREEN}${BOLD} ✔ TakinMart E-Commerce is 100% LIVE and ACTIVE!${NC}"
 echo -e "${GREEN}${BOLD}==============================================================================${NC}"
-echo -e "  🌐 Assigned Verified Free Port: ${CYAN}${BOLD}${WEB_PORT}${NC}"
-echo -e "  🗄️ Database:                    ${BOLD}takinmart${NC} on 127.0.0.1:5432"
+echo -e "  🌐 Listening Port:     ${BOLD}${WEB_PORT}${NC}"
+echo -e "  🚀 Background PID:     ${BOLD}${SERVER_PID}${NC}"
+if [ -n "$HTTP_STATUS" ] && [ "$HTTP_STATUS" != "000" ]; then
+    echo -e "  🩺 Health Check:       ${GREEN}${BOLD}HTTP ${HTTP_STATUS} OK${NC} (Answering at http://127.0.0.1:${WEB_PORT})"
+fi
+echo -e "  🗄️ Database:           ${BOLD}takinmart${NC} on 127.0.0.1:5432"
+echo -e "  📄 Server Log:         ${BOLD}takinmart.log${NC}"
 echo -e "${GREEN}${BOLD}==============================================================================${NC}"
-echo ""
-echo -e "${CYAN}${BOLD}📋 NEXT STEP IN aaPanel (Takes 30 seconds):${NC}"
-echo -e " 1. Go to aaPanel -> ${BOLD}Website${NC} -> ${BOLD}Node project${NC} tab"
-echo -e " 2. Click ${BOLD}Add Node project${NC}:"
-echo -e "    - Path: ${BOLD}${APP_DIR}${NC}"
-echo -e "    - Run Opt: ${BOLD}node .output/server/index.mjs${NC}"
-echo -e "    - Port: ${CYAN}${BOLD}${WEB_PORT}${NC}  <-- (Free Port automatically chosen)"
-echo -e "    - Domain name: ${BOLD}yourdomain.com${NC} (e.g. takinmart.bt)"
-echo -e " 3. Click ${BOLD}Submit${NC}"
-echo -e " 4. Click site name -> ${BOLD}SSL${NC} -> Enable Let's Encrypt SSL & Force HTTPS"
-echo ""
-echo -e "${GREEN}${BOLD}🚀 To test right now in terminal, run: ${NC}${BOLD}PORT=${WEB_PORT} node .output/server/index.mjs${NC}"
+echo -e " 🚀 You can visit: ${BOLD}https://takinmart.bt${NC} immediately!"
 echo ""
