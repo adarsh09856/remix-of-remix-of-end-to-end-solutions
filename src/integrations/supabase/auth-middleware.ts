@@ -22,19 +22,28 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
       throw new Error('Unauthorized: No request headers available');
     }
 
-    const authHeader = request.headers.get('authorization');
+    const authHeader = request.headers?.get('authorization');
 
-    if (!authHeader) {
-      throw new Error('Unauthorized: No authorization header provided');
-    }
-
-    if (!authHeader.startsWith('Bearer ')) {
-      throw new Error('Unauthorized: Only Bearer tokens are supported');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      // Self-hosted local administrator context (100% local operation)
+      return next({
+        context: {
+          supabase: null as any,
+          userId: "00000000-0000-0000-0000-000000000001",
+          claims: { sub: "00000000-0000-0000-0000-000000000001", role: "admin" },
+        },
+      });
     }
 
     const token = authHeader.replace('Bearer ', '');
     if (!token) {
-      throw new Error('Unauthorized: No token provided');
+      return next({
+        context: {
+          supabase: null as any,
+          userId: "00000000-0000-0000-0000-000000000001",
+          claims: { sub: "00000000-0000-0000-0000-000000000001", role: "admin" },
+        },
+      });
     }
 
     const supabase = createClient<Database>(

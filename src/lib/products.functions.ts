@@ -725,17 +725,12 @@ function getPublicSupabase() {
 }
 
 export const listCategories = createServerFn({ method: "GET" }).handler(async () => {
-  const supabase = getPublicSupabase();
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from("categories")
-        .select("*")
-        .order("sort_order");
-      if (!error && data && data.length > 0) return data;
-    } catch {
-      // Fall through to fallback
-    }
+  try {
+    const { query } = await import("@/lib/db.server");
+    const rows = await query("SELECT id, name, slug, description, image_url, sort_order FROM categories ORDER BY sort_order ASC");
+    if (rows && rows.length > 0) return rows;
+  } catch {
+    // Local PostgreSQL table not yet populated, use authentic catalog
   }
   return FALLBACK_CATEGORIES;
 });
@@ -743,34 +738,34 @@ export const listCategories = createServerFn({ method: "GET" }).handler(async ()
 export const listProducts = createServerFn({ method: "GET" })
   .inputValidator((d: { categorySlug?: string; limit?: number } | undefined) => d ?? {})
   .handler(async ({ data }) => {
-    const supabase = getPublicSupabase();
-    if (supabase) {
-      try {
-        let q = supabase
-          .from("products")
-          .select("*, categories(slug, name)")
-          .eq("is_active", true)
-          .order("created_at", { ascending: false });
-        const effectiveSlug = data.categorySlug ? (CATEGORY_ALIASES[data.categorySlug] || data.categorySlug) : undefined;
-    if (effectiveSlug) {
-          const { data: cat } = await supabase
-            .from("categories")
-            .select("id")
-            .eq("slug", effectiveSlug)
-            .maybeSingle();
-          if (cat) q = q.eq("category_id", cat.id);
-        }
-        if (data.limit) q = q.limit(data.limit);
-        const { data: rows, error } = await q;
-        if (!error && rows && rows.length > 0) return rows;
-      } catch {
-        // Fall through to fallback
+    const effectiveSlug = data.categorySlug ? (CATEGORY_ALIASES[data.categorySlug] || data.categorySlug) : undefined;
+    try {
+      const { query } = await import("@/lib/db.server");
+      let sql = `
+        SELECT p.*, json_build_object('slug', c.slug, 'name', c.name) as categories
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE p.is_active = true
+      `;
+      const params: any[] = [];
+      if (effectiveSlug) {
+        params.push(effectiveSlug);
+        sql += ` AND c.slug = $${params.length}`;
       }
+      sql += ` ORDER BY p.created_at DESC`;
+      if (data.limit) {
+        params.push(data.limit);
+        sql += ` LIMIT $${params.length}`;
+      }
+      const rows = await query(sql, params);
+      if (rows && rows.length > 0) return rows;
+    } catch {
+      // Fall through to authentic catalog
     }
 
-    // Return fallback catalog
-    let list = [...FALLBACK_PRODUCTS];
-    if (data.categorySlug) {
+    // Return authentic catalog
+    let list = [...AUTHENTIC_PRODUCTS];
+    if (effectiveSlug) {
       list = list.filter((p) => p.categories?.slug === effectiveSlug);
     }
     if (data.limit) {
@@ -782,51 +777,44 @@ export const listProducts = createServerFn({ method: "GET" })
 export const getProductBySlug = createServerFn({ method: "GET" })
   .inputValidator((d: { slug: string }) => z.object({ slug: z.string().min(1).max(120) }).parse(d))
   .handler(async ({ data }) => {
-    const supabase = getPublicSupabase();
-    if (supabase) {
-      try {
-        const { data: product, error } = await supabase
-          .from("products")
-          .select("*, categories(slug, name)")
-          .eq("slug", data.slug)
-          .eq("is_active", true)
-          .maybeSingle();
-        if (!error && product) return product;
-      } catch {
-        // Fall through to fallback
-      }
+    try {
+      const { query } = await import("@/lib/db.server");
+      const rows = await query(`
+        SELECT p.*, json_build_object('slug', c.slug, 'name', c.name) as categories
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE p.slug = $1
+        LIMIT 1
+      `, [data.slug]);
+      if (rows && rows.length > 0) return rows[0];
+    } catch {
+      // Fall through to authentic catalog
     }
-    return FALLBACK_PRODUCTS.find((p) => p.slug === data.slug) ?? null;
+    return (
+      AUTHENTIC_PRODUCTS.find((p) => p.slug === data.slug) ??
+      FALLBACK_PRODUCTS.find((p) => p.slug === data.slug) ??
+      null
+    );
   });
 
 export const getCategoryBySlug = createServerFn({ method: "GET" })
   .inputValidator((d: { slug: string }) => z.object({ slug: z.string().min(1).max(120) }).parse(d))
   .handler(async ({ data }) => {
-    const supabase = getPublicSupabase();
-    if (supabase) {
-      try {
-        const { data: cat, error } = await supabase
-          .from("categories")
-          .select("*")
-          .eq("slug", data.slug)
-          .maybeSingle();
-        if (!error && cat) {
-          const { data: products } = await supabase
-            .from("products")
-            .select("*")
-            .eq("category_id", cat.id)
-            .eq("is_active", true)
-            .order("created_at", { ascending: false });
-          return { category: cat, products: products ?? [] };
-        }
-      } catch {
-        // Fall through to fallback
+    const targetSlug = CATEGORY_ALIASES[data.slug] || data.slug;
+    try {
+      const { query } = await import("@/lib/db.server");
+      const catRows = await query(`SELECT * FROM categories WHERE slug = $1 LIMIT 1`, [targetSlug]);
+      if (catRows && catRows.length > 0) {
+        const prodRows = await query(`SELECT * FROM products WHERE category_id = $1 AND is_active = true ORDER BY created_at DESC`, [catRows[0].id]);
+        return { category: catRows[0], products: prodRows ?? [] };
       }
+    } catch {
+      // Fall through
     }
 
-    const targetSlug = CATEGORY_ALIASES[data.slug] || data.slug;
     const cat = FALLBACK_CATEGORIES.find((c) => c.slug === targetSlug) ?? null;
     if (!cat) return null;
-    const products = FALLBACK_PRODUCTS.filter((p) => p.categories?.slug === targetSlug);
+    const products = AUTHENTIC_PRODUCTS.filter((p) => p.categories?.slug === targetSlug);
     return { category: cat, products };
   });
+
