@@ -9,6 +9,7 @@ set -e
 
 PORT=4000
 echo "==> [1/4] Pulling latest updates from git repository..."
+git stash 2>/dev/null || true
 git pull origin main
 
 echo "==> [2/4] Building production application..."
