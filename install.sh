@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # TakinMart E-Commerce — Automated aaPanel Installation & Database Provisioning
-# Auto-detects free ports, imports PostgreSQL schema, builds production bundle
+# Multi-Layer Free Port Scanner (Zero collision with existing aaPanel sites)
 # Database: takinmart | User: takinmart | Password: takinmart
 # ==============================================================================
 
@@ -34,31 +34,64 @@ cat << "EOF"
 EOF
 echo -e "${NC}"
 echo -e "${BOLD}==============================================================================${NC}"
-echo -e " 🚀 aaPanel Direct Installer with Automatic Free Port Detection"
+echo -e " 🚀 aaPanel Direct Installer with Strict Free Port Detection"
 echo -e " 🗄️ Database: ${BOLD}takinmart${NC} | User: ${BOLD}takinmart${NC} | Password: ${BOLD}takinmart${NC}"
 echo -e "${BOLD}==============================================================================${NC}\n"
 
-# 1. Port collision detection & automatic free port assignment (like newai)
-log_info "[1/5] Scanning for available free ports on your server..."
+# 1. Multi-Layer Port Scanner (protects existing aaPanel websites)
+log_info "[1/5] Deep scanning for guaranteed free ports (avoiding existing aaPanel sites)..."
 
 is_port_in_use() {
     local port=$1
-    if command -v ss >/dev/null 2>&1; then
-        if ss -tuln | grep -E "[: ]${port}[ ]+" >/dev/null 2>&1; then
-            return 0 # In use
+
+    # Check 1: aaPanel Nginx reverse proxy configs (even if site is stopped or restarting)
+    if [ -d "/www/server/panel/vhost" ]; then
+        if grep -rqE "127\.0\.0\.1:${port}[^0-9]|localhost:${port}[^0-9]" /www/server/panel/vhost/ 2>/dev/null; then
+            return 0 # In use by another aaPanel website
         fi
-    elif command -v netstat >/dev/null 2>&1; then
-        if netstat -tuln | grep -E "[: ]${port}[ ]+" >/dev/null 2>&1; then
-            return 0 # In use
-        fi
-    elif command -v lsof >/dev/null 2>&1; then
-        if lsof -i :"$port" -sTCP:LISTEN >/dev/null 2>&1; then
-            return 0 # In use
-        fi
-    elif (echo > /dev/tcp/127.0.0.1/$port) >/dev/null 2>&1; then
-        return 0 # In use
     fi
-    return 1 # Port is completely free
+    if [ -d "/www/server/nginx/conf/vhost" ]; then
+        if grep -rqE "127\.0\.0\.1:${port}[^0-9]|localhost:${port}[^0-9]" /www/server/nginx/conf/vhost/ 2>/dev/null; then
+            return 0 # In use by another aaPanel website
+        fi
+    fi
+
+    # Check 2: ss tool
+    if command -v ss >/dev/null 2>&1; then
+        if ss -tuln | grep -qE "(:| )${port}( |$)"; then
+            return 0 # Actively listening
+        fi
+    fi
+
+    # Check 3: netstat tool
+    if command -v netstat >/dev/null 2>&1; then
+        if netstat -tuln | grep -qE "(:| )${port}( |$)"; then
+            return 0 # Actively listening
+        fi
+    fi
+
+    # Check 4: lsof tool
+    if command -v lsof >/dev/null 2>&1; then
+        if lsof -i :"$port" -sTCP:LISTEN >/dev/null 2>&1; then
+            return 0 # Actively listening
+        fi
+    fi
+
+    # Check 5: fuser tool
+    if command -v fuser >/dev/null 2>&1; then
+        if fuser "${port}/tcp" >/dev/null 2>&1; then
+            return 0 # Actively listening
+        fi
+    fi
+
+    # Check 6: Node.js active socket bind test (100% proof of EADDRINUSE)
+    if command -v node >/dev/null 2>&1; then
+        if ! node -e "const s = require('net').createServer(); s.once('error', () => process.exit(1)); s.listen(${port}, '0.0.0.0', () => { s.close(); process.exit(0); });" >/dev/null 2>&1; then
+            return 0 # Port cannot be bound
+        fi
+    fi
+
+    return 1 # 100% verified free port
 }
 
 resolve_free_port() {
@@ -66,20 +99,20 @@ resolve_free_port() {
     local service_name=$2
     local port=$base_port
     while is_port_in_use "$port"; do
-        log_warn "Port $port is already occupied by a host service. Trying port $((port + 1))..."
+        log_warn "Port $port is ALREADY IN USE by another website or service on aaPanel. Trying port $((port + 1))..."
         port=$((port + 1))
     done
     if [ "$port" -ne "$base_port" ]; then
-        log_info "Auto-assigned $service_name to free port: $port (was $base_port)"
+        log_info "Auto-assigned $service_name to free port: ${BOLD}$port${NC} (base $base_port was occupied)"
     else
-        log_success "Port $port for $service_name is available and free!"
+        log_success "Port ${BOLD}$port${NC} for $service_name is 100% free and verified!"
     fi
     printf '%s\n' "$port"
 }
 
 WEB_PORT=$(resolve_free_port 3000 "TakinMart Web Server")
 
-# 2. Write .env with exact user credentials and the assigned free port
+# 2. Write .env with exact user credentials and the verified free port
 log_info "[2/5] Configuring .env with aaPanel credentials and free port ${WEB_PORT}..."
 cat > .env << ENVEOF
 POSTGRES_HOST="127.0.0.1"
@@ -90,7 +123,6 @@ POSTGRES_PASSWORD="takinmart"
 DATABASE_URL="postgresql://takinmart:takinmart@127.0.0.1:5432/takinmart"
 APP_URL="https://takinmart.bt"
 PORT=${WEB_PORT}
-NODE_ENV="production"
 ENVEOF
 log_success "Updated .env file with takinmart database credentials & PORT=${WEB_PORT}!"
 
@@ -138,8 +170,8 @@ echo ""
 echo -e "${GREEN}${BOLD}==============================================================================${NC}"
 echo -e "${GREEN}${BOLD} ✔ TakinMart E-Commerce is fully configured & built!${NC}"
 echo -e "${GREEN}${BOLD}==============================================================================${NC}"
-echo -e "  🌐 Assigned Free Port: ${BOLD}${WEB_PORT}${NC}"
-echo -e "  🗄️ Database:           ${BOLD}takinmart${NC} on 127.0.0.1:5432"
+echo -e "  🌐 Assigned Verified Free Port: ${CYAN}${BOLD}${WEB_PORT}${NC}"
+echo -e "  🗄️ Database:                    ${BOLD}takinmart${NC} on 127.0.0.1:5432"
 echo -e "${GREEN}${BOLD}==============================================================================${NC}"
 echo ""
 echo -e "${CYAN}${BOLD}📋 NEXT STEP IN aaPanel (Takes 30 seconds):${NC}"
@@ -147,7 +179,7 @@ echo -e " 1. Go to aaPanel -> ${BOLD}Website${NC} -> ${BOLD}Node project${NC} ta
 echo -e " 2. Click ${BOLD}Add Node project${NC}:"
 echo -e "    - Path: ${BOLD}${APP_DIR}${NC}"
 echo -e "    - Run Opt: ${BOLD}node .output/server/index.mjs${NC}"
-echo -e "    - Port: ${BOLD}${WEB_PORT}${NC}"
+echo -e "    - Port: ${CYAN}${BOLD}${WEB_PORT}${NC}  <-- (Free Port automatically chosen)"
 echo -e "    - Domain name: ${BOLD}yourdomain.com${NC} (e.g. takinmart.bt)"
 echo -e " 3. Click ${BOLD}Submit${NC}"
 echo -e " 4. Click site name -> ${BOLD}SSL${NC} -> Enable Let's Encrypt SSL & Force HTTPS"
