@@ -28,6 +28,7 @@ import { LeadsTab, EnquiriesTab, TasksTab, ActivityTab } from "@/components/admi
 import { crmPipelineStats } from "@/lib/crm.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
+  ssr: false,
   head: () => ({ meta: [{ title: "Admin — Takin Mart" }] }),
   component: AdminPage,
 });
@@ -59,11 +60,21 @@ function AdminPage() {
   }
 
   if (isError) {
+    const msg = error instanceof Error ? error.message : "";
+    const isAuthErr = msg.includes("Unauthorized") || msg.includes("token") || msg.includes("auth") || msg.includes("Missing");
     return (
       <div className="container-page py-24 text-center max-w-md mx-auto">
-        <h1 className="font-display text-3xl">Admin panel could not load</h1>
-        <p className="text-muted-foreground mt-3">{error instanceof Error ? error.message : "Please refresh and try again."}</p>
-        <button onClick={() => qc.invalidateQueries({ queryKey: ["admin"] })} className="btn-hero mt-6">Retry</button>
+        <AlertTriangle className="h-12 w-12 text-gold mx-auto mb-4" />
+        <h1 className="font-display text-3xl">{isAuthErr ? "Admin Sign-In Required" : "Admin Panel Could Not Load"}</h1>
+        <p className="text-muted-foreground mt-3">
+          {isAuthErr
+            ? "You need active administrator credentials to access the Takin Mart admin console. Please sign in with your admin account."
+            : (error instanceof Error ? error.message : "Please refresh and try again.")}
+        </p>
+        <div className="mt-6 flex justify-center gap-3">
+          <Link to="/auth" search={{ redirect: "/admin" }} className="btn-hero">Sign in as Admin</Link>
+          <button onClick={() => qc.invalidateQueries({ queryKey: ["admin"] })} className="btn-ghost-hero">Retry</button>
+        </div>
       </div>
     );
   }
@@ -71,8 +82,10 @@ function AdminPage() {
   if (!admin) {
     return (
       <div className="container-page py-24 text-center max-w-md mx-auto">
-        <h1 className="font-display text-3xl">Admin access required</h1>
+        <AlertTriangle className="h-12 w-12 text-gold mx-auto mb-4" />
+        <h1 className="font-display text-3xl">Admin Access Required</h1>
         <p className="text-muted-foreground mt-3">Sign in with the store admin account to manage products, orders, customers, coupons, reviews, inventory, and settings.</p>
+        <Link to="/auth" search={{ redirect: "/admin" }} className="btn-hero mt-6 inline-block">Sign in as Admin</Link>
       </div>
     );
   }

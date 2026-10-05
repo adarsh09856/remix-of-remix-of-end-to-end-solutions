@@ -18,6 +18,7 @@ import {
 
 
 export const Route = createFileRoute("/_authenticated/pos")({
+  ssr: false,
   head: () => ({ meta: [{ title: "POS Register — Takin Mart" }] }),
   component: PosPage,
 });
