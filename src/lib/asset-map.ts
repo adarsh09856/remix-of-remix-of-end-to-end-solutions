@@ -50,5 +50,9 @@ export function resolveAsset(url?: string | null): string | undefined {
   if (url.startsWith("storage://products/")) {
     return `/api/public/product-image?path=${encodeURIComponent(url.replace("storage://products/", ""))}`;
   }
+  if (url.includes("/__l5e/assets-v1/")) {
+    const filename = url.split("/").pop();
+    if (filename) return `/products/${filename}`;
+  }
   return map[url] ?? url;
 }
