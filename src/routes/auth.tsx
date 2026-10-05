@@ -84,14 +84,6 @@ function AuthPage() {
     }
   }
 
-  const enterAdminDirectly = () => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("takinmart_admin_session", "true");
-    }
-    toast.success("Store Administrator Console Unlocked");
-    navigate({ to: "/admin", replace: true });
-  };
-
   const input = "w-full bg-card border border-border rounded-lg px-4 py-3 text-sm outline-none focus:border-primary";
 
   return (
@@ -105,30 +97,12 @@ function AuthPage() {
         {mode === "signup" && (
           <input className={input} placeholder="Full name" required maxLength={120} value={name} onChange={(e) => setName(e.target.value)} />
         )}
-        <input className={input} type="email" placeholder="Email (e.g. admin@takinmart.bt)" required value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input className={input} type="email" placeholder="Email address" required value={email} onChange={(e) => setEmail(e.target.value)} />
         <input className={input} type="password" placeholder="Password" required minLength={4} value={password} onChange={(e) => setPassword(e.target.value)} />
         <button disabled={loading} className="btn-hero w-full">
           {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
         </button>
       </form>
-
-      <div className="mt-8 pt-6 border-t border-border">
-        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-center">
-          <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-primary uppercase tracking-wide mb-1">
-            <Shield className="h-4 w-4 text-gold" /> Store Administrator
-          </div>
-          <p className="text-xs text-muted-foreground mb-3">
-            Manage catalog, inventory, orders, reviews and store settings
-          </p>
-          <button
-            type="button"
-            onClick={enterAdminDirectly}
-            className="btn-ghost-hero w-full text-xs py-2.5 font-semibold"
-          >
-            1-Click Admin Console Access
-          </button>
-        </div>
-      </div>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         {mode === "signin" ? "New to Takin Mart?" : "Already have an account?"}{" "}

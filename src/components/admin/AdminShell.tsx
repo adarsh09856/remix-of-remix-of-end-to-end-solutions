@@ -3,7 +3,7 @@ import { useState, type ReactNode } from "react";
 import {
   LayoutDashboard, Users2, MessageSquare, ListChecks, Activity,
   Package, FolderTree, Boxes, ShoppingBag, Users, Tag, Star,
-  Settings as SettingsIcon, Store, Menu, X, ChevronRight, Search,
+  Settings as SettingsIcon, Store, Menu, X, ChevronRight, Search, LogOut,
 } from "lucide-react";
 
 export type AdminTab =
@@ -110,10 +110,21 @@ export function AdminShell({
           </div>
         ))}
       </nav>
-      <div className="px-3 pb-5">
+      <div className="px-3 pb-5 space-y-2">
         <Link to="/pos" className="flex items-center gap-2 rounded-xl bg-primary-foreground/10 px-3 py-2.5 text-sm hover:bg-primary-foreground/20 transition">
           <Store className="h-4 w-4" /> Open POS register
         </Link>
+        <button
+          onClick={() => {
+            if (typeof window !== "undefined") {
+              localStorage.removeItem("takinmart_admin_session");
+              window.location.reload();
+            }
+          }}
+          className="flex w-full items-center gap-2 rounded-xl bg-primary-foreground/5 text-primary-foreground/80 px-3 py-2.5 text-sm hover:bg-destructive/80 hover:text-white transition text-left"
+        >
+          <LogOut className="h-4 w-4" /> Lock &amp; Sign out
+        </button>
       </div>
     </div>
   );
@@ -157,12 +168,27 @@ export function AdminShell({
                 <h1 className="font-display text-xl sm:text-2xl truncate">{title}</h1>
                 {subtitle && <p className="text-xs text-muted-foreground truncate">{subtitle}</p>}
               </div>
-              <Link
-                to="/"
-                className="hidden sm:inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm hover:bg-secondary transition"
-              >
-                <Search className="h-4 w-4" /> Visit store
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link
+                  to="/"
+                  className="hidden sm:inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm hover:bg-secondary transition"
+                >
+                  <Search className="h-4 w-4" /> Visit store
+                </Link>
+                <button
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      localStorage.removeItem("takinmart_admin_session");
+                      window.location.reload();
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm text-muted-foreground hover:text-destructive hover:border-destructive transition"
+                  title="Sign out of Admin Console"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="hidden md:inline">Sign out</span>
+                </button>
+              </div>
             </div>
           </header>
           <main className="px-4 py-6 sm:px-6 sm:py-8">{children}</main>

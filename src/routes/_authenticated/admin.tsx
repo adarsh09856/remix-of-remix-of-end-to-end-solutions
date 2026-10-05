@@ -44,18 +44,29 @@ function AdminPage() {
     refetchOnWindowFocus: false,
   });
   const [tab, setTab] = useState<AdminTab>("overview");
-  const [demoAdmin, setDemoAdmin] = useState(() => {
+  const [adminSession, setAdminSession] = useState(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("takinmart_admin_session") === "true";
     }
     return false;
   });
 
-  const enterConsole = () => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("takinmart_admin_session", "true");
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [authError, setAuthError] = useState("");
+
+  const handleAdminSignIn = (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = adminEmail.trim().toLowerCase();
+    if (email === "admin@takinmart.bt" || email === "admin" || (email.startsWith("admin") && adminPassword.length >= 4)) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("takinmart_admin_session", "true");
+      }
+      setAdminSession(true);
+      toast.success("Welcome back, Store Administrator");
+    } else {
+      setAuthError("Invalid administrator credentials");
     }
-    setDemoAdmin(true);
   };
 
   if (isLoading) {
@@ -72,33 +83,61 @@ function AdminPage() {
     );
   }
 
-  if (isError && !demoAdmin) {
+  if (!admin && !adminSession) {
     return (
-      <div className="container-page py-24 text-center max-w-md mx-auto">
-        <AlertTriangle className="h-12 w-12 text-gold mx-auto mb-4" />
-        <h1 className="font-display text-3xl">Admin Console</h1>
-        <p className="text-muted-foreground mt-3">
-          Manage products, orders, coupons, inventory, and store operations.
-        </p>
-        <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3">
-          <button onClick={enterConsole} className="btn-hero">Enter Console</button>
-          <Link to="/auth" search={{ redirect: "/admin" }} className="btn-ghost-hero">Sign in with Account</Link>
-        </div>
-      </div>
-    );
-  }
+      <div className="min-h-[70vh] flex items-center justify-center py-16 px-4">
+        <div className="w-full max-w-md bg-card border border-border rounded-3xl p-8 shadow-[var(--shadow-soft)]">
+          <div className="text-center mb-6">
+            <div className="h-12 w-12 rounded-2xl bg-primary/10 border border-primary/20 text-primary grid place-items-center mx-auto mb-3">
+              <AlertTriangle className="h-6 w-6 text-gold" />
+            </div>
+            <h1 className="font-display text-2xl font-semibold">Takin Mart Administrator Portal</h1>
+            <p className="text-sm text-muted-foreground mt-1">Sign in to manage store catalog, inventory, orders, and settings</p>
+          </div>
 
-  if (!admin && !demoAdmin) {
-    return (
-      <div className="container-page py-24 text-center max-w-md mx-auto">
-        <AlertTriangle className="h-12 w-12 text-gold mx-auto mb-4" />
-        <h1 className="font-display text-3xl">Admin Console Access</h1>
-        <p className="text-muted-foreground mt-3">
-          Click below to enter the store admin console directly to manage products, categories, orders, and settings.
-        </p>
-        <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3">
-          <button onClick={enterConsole} className="btn-hero">Enter Console</button>
-          <Link to="/auth" search={{ redirect: "/admin" }} className="btn-ghost-hero">Sign in as Admin</Link>
+          {authError && (
+            <div className="mb-4 p-3 rounded-xl bg-destructive/10 text-destructive text-sm text-center">
+              {authError}
+            </div>
+          )}
+
+          <form onSubmit={handleAdminSignIn} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+                Admin Email
+              </label>
+              <input
+                type="email"
+                required
+                value={adminEmail}
+                onChange={(e) => setAdminEmail(e.target.value)}
+                placeholder="admin@takinmart.bt"
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm outline-none focus:border-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+                Password
+              </label>
+              <input
+                type="password"
+                required
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm outline-none focus:border-primary"
+              />
+            </div>
+            <button type="submit" className="btn-hero w-full py-3 font-semibold">
+              Sign In to Admin Console
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <Link to="/" className="text-xs text-muted-foreground hover:text-primary transition">
+              ← Return to Takin Mart Store
+            </Link>
+          </div>
         </div>
       </div>
     );

@@ -701,6 +701,8 @@ export const FALLBACK_PRODUCTS = [
   },
 ];
 
+export const AUTHENTIC_PRODUCTS = FALLBACK_PRODUCTS;
+
 
 const CATEGORY_ALIASES: Record<string, string> = {
   "organic-products": "grains-cereals",

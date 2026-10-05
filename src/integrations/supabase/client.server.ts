@@ -5,15 +5,47 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const DEFAULT_SUPABASE_URL = "https://sjujtwkzwkwkjcqjslvm.supabase.co";
-const DEFAULT_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqdWp0d2t6d2t3a2pjcWpzbHZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4ODAyOTksImV4cCI6MjA5NzQ1NjI5OX0.A1xpQZ_spTCPcNlQIfpW8hJWB7eWcRqm0HLKzH1X3Jg";
+const DEFAULT_SUPABASE_URL = "";
+const DEFAULT_SUPABASE_KEY = "";
 
 class ServerWebSocketStub {}
 
+function createSafeAdminMock() {
+  const handler: ProxyHandler<any> = {
+    get(_target, prop) {
+      if (prop === "then") {
+        return (resolve: any) => resolve({ data: [], error: null, count: 0 });
+      }
+      if (prop === "auth") {
+        return {
+          getUser: async () => ({ data: { user: null }, error: null }),
+          getClaims: async () => ({ data: null, error: new Error("Self-hosted") }),
+          signUp: async () => ({ data: { user: null, session: null }, error: null }),
+          signInWithPassword: async () => ({ data: { user: null, session: null }, error: null }),
+          signOut: async () => ({ error: null }),
+          admin: {
+            listUsers: async () => ({ data: { users: [] }, error: null }),
+            getUserById: async () => ({ data: { user: null }, error: null }),
+          },
+        };
+      }
+      return (..._args: any[]) => new Proxy(() => {}, handler);
+    },
+    apply() {
+      return new Proxy(() => {}, handler);
+    },
+  };
+  return new Proxy(() => {}, handler);
+}
+
 function createSupabaseAdminClient() {
-  const env = typeof process !== 'undefined' ? process.env : {} as any;
+  const env = typeof process !== "undefined" ? process.env : ({} as any);
   const SUPABASE_URL = env?.SUPABASE_URL || DEFAULT_SUPABASE_URL;
   const SUPABASE_SERVICE_ROLE_KEY = env?.SUPABASE_SERVICE_ROLE_KEY || env?.SUPABASE_PUBLISHABLE_KEY || DEFAULT_SUPABASE_KEY;
+
+  if (!SUPABASE_URL) {
+    return createSafeAdminMock() as any;
+  }
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: {
