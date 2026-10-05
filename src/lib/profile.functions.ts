@@ -7,9 +7,18 @@ async function ensureAccountRows(userId: string, fullName?: string | null) {
   await supabaseAdmin
     .from("profiles")
     .upsert({ id: userId, full_name: fullName ?? null }, { onConflict: "id", ignoreDuplicates: true });
+
+  // If no administrator exists in the store yet, promote the very first registrant to admin
+  const { count } = await supabaseAdmin
+    .from("user_roles")
+    .select("id", { count: "exact", head: true })
+    .eq("role", "admin");
+
+  const initialRole = (count === 0 || count === null) ? "admin" : "user";
+
   await supabaseAdmin
     .from("user_roles")
-    .upsert({ user_id: userId, role: "user" }, { onConflict: "user_id,role", ignoreDuplicates: true });
+    .upsert({ user_id: userId, role: initialRole }, { onConflict: "user_id,role", ignoreDuplicates: true });
 }
 
 const ProfileSchema = z.object({

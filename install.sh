@@ -123,6 +123,10 @@ POSTGRES_DB="takinmart"
 POSTGRES_USER="takinmart"
 POSTGRES_PASSWORD="takinmart"
 DATABASE_URL="postgresql://takinmart:takinmart@127.0.0.1:5432/takinmart"
+VITE_SUPABASE_URL="https://sjujtwkzwkwkjcqjslvm.supabase.co"
+VITE_SUPABASE_PUBLISHABLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqdWp0d2t6d2t3a2pjcWpzbHZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4ODAyOTksImV4cCI6MjA5NzQ1NjI5OX0.A1xpQZ_spTCPcNlQIfpW8hJWB7eWcRqm0HLKzH1X3Jg"
+SUPABASE_URL="https://sjujtwkzwkwkjcqjslvm.supabase.co"
+SUPABASE_PUBLISHABLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqdWp0d2t6d2t3a2pjcWpzbHZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4ODAyOTksImV4cCI6MjA5NzQ1NjI5OX0.A1xpQZ_spTCPcNlQIfpW8hJWB7eWcRqm0HLKzH1X3Jg"
 APP_URL="https://takinmart.bt"
 PORT=${WEB_PORT}
 ENVEOF
