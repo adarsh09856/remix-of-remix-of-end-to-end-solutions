@@ -172,10 +172,10 @@ function Categories() {
   return (
     <section className="container-page py-20">
       <div className="text-center max-w-xl mx-auto mb-12">
-        <span className="eyebrow">Explore</span>
-        <h2 className="font-display text-4xl md:text-5xl mt-2">Shop by Category</h2>
+        <span className="eyebrow">Explore Bhutan</span>
+        <h2 className="font-display text-4xl md:text-5xl mt-2">Search by Category</h2>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 max-w-4xl mx-auto">
+      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-4 lg:gap-6 max-w-6xl mx-auto">
         {cats.map((c) => (
           <Link
             key={c.id}
@@ -183,12 +183,12 @@ function Categories() {
             params={{ slug: c.slug }}
             className="group flex flex-col items-center text-center"
           >
-            <div className="aspect-square w-full rounded-full overflow-hidden bg-secondary border border-border/60 group-hover:border-primary transition-all group-hover:shadow-[var(--shadow-soft)]">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full overflow-hidden bg-secondary border-2 border-border/70 group-hover:border-primary group-hover:scale-105 transition-all shadow-sm">
               {c.image_url && (
                 <img src={resolveAsset(c.image_url)} alt={c.name} loading="lazy" className="h-full w-full object-cover" />
               )}
             </div>
-            <div className="mt-3 text-sm font-medium leading-tight">{c.name}</div>
+            <div className="mt-3 text-xs sm:text-sm font-medium leading-tight group-hover:text-primary transition-colors">{c.name}</div>
           </Link>
         ))}
       </div>

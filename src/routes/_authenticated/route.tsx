@@ -19,9 +19,19 @@ export const Route = createFileRoute("/_authenticated")({
   pendingMinMs: 0,
   pendingComponent: AuthenticatedPending,
   beforeLoad: async ({ location }) => {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session?.user) throw redirect({ to: "/auth", search: { redirect: location.href } });
-    return { user: data.session.user };
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (!data?.session?.user && !location.pathname.startsWith("/admin")) {
+        throw redirect({ to: "/auth", search: { redirect: location.href } });
+      }
+      return { user: data?.session?.user ?? null };
+    } catch (e) {
+      if ((e as any)?.to || (e as any)?.href) throw e;
+      if (location.pathname.startsWith("/admin")) {
+        return { user: null };
+      }
+      throw redirect({ to: "/auth", search: { redirect: location.href } });
+    }
   },
   component: () => <Outlet />,
 });

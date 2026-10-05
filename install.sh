@@ -174,23 +174,41 @@ log_success "Production build completed (.output/server/index.mjs ready)!"
 # 6. Automatically start / restart production service on the dedicated port
 log_info "[6/6] Launching/restarting TakinMart on Port ${WEB_PORT}..."
 
-# Kill only previous process on this project's dedicated port (strictly protects 3000/3001)
+# Robust process kill on dedicated port
+log_info "Ensuring port ${WEB_PORT} is completely free..."
 if command -v fuser >/dev/null 2>&1; then
-    fuser -k "${WEB_PORT}/tcp" >/dev/null 2>&1 || true
+    fuser -k -9 "${WEB_PORT}/tcp" >/dev/null 2>&1 || true
 fi
-sleep 1
+if command -v lsof >/dev/null 2>&1; then
+    lsof -ti :${WEB_PORT} | xargs -r kill -9 >/dev/null 2>&1 || true
+fi
+if [ -f "takinmart.pid" ]; then
+    OLD_PID=$(cat takinmart.pid 2>/dev/null)
+    if [ -n "$OLD_PID" ]; then
+        kill -9 "$OLD_PID" >/dev/null 2>&1 || true
+    fi
+    rm -f takinmart.pid
+fi
+sleep 2
 
 # Launch in background with dedicated port
-PORT=${WEB_PORT} nohup node .output/server/index.mjs > takinmart.log 2>&1 &
+PORT=${WEB_PORT} NITRO_PORT=${WEB_PORT} nohup node .output/server/index.mjs > takinmart.log 2>&1 &
 SERVER_PID=$!
+echo "$SERVER_PID" > takinmart.pid
+disown -h "$SERVER_PID" 2>/dev/null || true
 
-sleep 3
-
-# Automated health check
+# Automated health check loop
+log_info "Verifying service on http://127.0.0.1:${WEB_PORT}..."
 HTTP_STATUS=""
-if command -v curl >/dev/null 2>&1; then
-    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:${WEB_PORT}" 2>/dev/null || echo "000")
-fi
+for i in 1 2 3 4 5 6; do
+    sleep 1
+    if command -v curl >/dev/null 2>&1; then
+        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:${WEB_PORT}" 2>/dev/null || echo "000")
+        if [ "$HTTP_STATUS" != "000" ] && [ "$HTTP_STATUS" != "502" ]; then
+            break
+        fi
+    fi
+done
 
 echo ""
 echo -e "${GREEN}${BOLD}==============================================================================${NC}"

@@ -156,20 +156,35 @@ export function Footer() {
         </div>
         <div>
           <h4 className="text-sm font-semibold mb-4 uppercase tracking-wider opacity-80">Customer Care</h4>
-          <ul className="space-y-2.5 text-sm opacity-80">
+          <ul className="space-y-2 text-sm opacity-80">
             <li><Link to="/account">My Account</Link></li>
             <li><Link to="/orders">Order History</Link></li>
             <li><Link to="/faq">FAQs</Link></li>
             <li><Link to="/contact">Shipping & Returns</Link></li>
+            <li className="pt-2">
+              <a href="mailto:support@takinmart.bt" className="text-xs hover:underline flex items-center gap-1 text-gold">
+                ✉ support@takinmart.bt
+              </a>
+            </li>
+            <li>
+              <a href="mailto:info@takinmart.bt" className="text-xs hover:underline flex items-center gap-1 text-gold">
+                ✉ info@takinmart.bt
+              </a>
+            </li>
           </ul>
         </div>
         <div>
-          <h4 className="text-sm font-semibold mb-4 uppercase tracking-wider opacity-80">We Deliver To</h4>
-          <ul className="space-y-2.5 text-sm opacity-80">
-            <li>🇧🇹 Bhutan</li>
-            <li>Thimphu, Paro, Punakha and beyond</li>
+          <h4 className="text-sm font-semibold mb-4 uppercase tracking-wider opacity-80">Corporate Inquiries</h4>
+          <ul className="space-y-1.5 text-xs opacity-80">
+            <li>Wholesale: <a href="mailto:bdm@takinmart.bt" className="text-gold hover:underline">bdm@takinmart.bt</a></li>
+            <li>Dispatch: <a href="mailto:office@takinmart.bt" className="text-gold hover:underline">office@takinmart.bt</a></li>
+            <li>GM: <a href="mailto:gm@takinmart.bt" className="text-gold hover:underline">gm@takinmart.bt</a></li>
+            <li>CEO: <a href="mailto:ceo@takinmart.bt" className="text-gold hover:underline">ceo@takinmart.bt</a></li>
           </ul>
-          <p className="text-xs opacity-60 mt-6">Support: +975 17 17 17 17</p>
+          <div className="mt-4 pt-3 border-t border-primary-foreground/15 text-xs opacity-90 space-y-1">
+            <p>Hotline: <a href="tel:+97517171717" className="font-semibold hover:underline">+975 17 17 17 17</a></p>
+            <p>HQ Desk: <a href="tel:+97517970050" className="font-semibold hover:underline">+975-1797-0050</a></p>
+          </div>
         </div>
       </div>
       <div className="border-t border-primary-foreground/15">

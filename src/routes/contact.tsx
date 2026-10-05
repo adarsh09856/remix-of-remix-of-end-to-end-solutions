@@ -52,23 +52,63 @@ function ContactPage() {
         <p className="text-muted-foreground mt-3">Questions, partnerships, wholesale — we'd love to hear from you.</p>
       </div>
 
-      <div className="mt-12 grid lg:grid-cols-2 gap-10 max-w-4xl mx-auto">
+      <div className="mt-12 grid lg:grid-cols-2 gap-10 max-w-5xl mx-auto">
         <div className="space-y-6">
-          {[
-            { I: Phone, t: "Phone", d: "+975 17 17 17 17" },
-            { I: Mail, t: "Email", d: "hello@takinmart.bt" },
-            { I: MapPin, t: "Address", d: "Thimphu, Bhutan" },
-          ].map(({ I, t, d }) => (
-            <div key={t} className="flex gap-4 items-start bg-card border border-border rounded-2xl p-6">
+          <div className="flex gap-4 items-start bg-card border border-border rounded-2xl p-6">
+            <div className="h-11 w-11 rounded-full bg-secondary grid place-items-center shrink-0">
+              <Phone className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-semibold">Phone & WhatsApp</h3>
+              <p className="text-muted-foreground text-sm mt-1">
+                24/7 Customer Care: <a href="tel:+97517171717" className="font-semibold text-foreground hover:underline">+975 17 17 17 17</a>
+              </p>
+              <p className="text-muted-foreground text-sm mt-0.5">
+                Bhutan HQ Operations: <a href="tel:+97517970050" className="font-semibold text-foreground hover:underline">+975-1797-0050</a>
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-card border border-border rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
               <div className="h-11 w-11 rounded-full bg-secondary grid place-items-center shrink-0">
-                <I className="h-5 w-5 text-primary" />
+                <Mail className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold">{t}</h3>
-                <p className="text-muted-foreground text-sm mt-1">{d}</p>
+                <h3 className="font-semibold">Official Departmental Inboxes</h3>
+                <p className="text-xs text-muted-foreground">Direct contact with each division at Takin Mart</p>
               </div>
             </div>
-          ))}
+            <div className="grid sm:grid-cols-2 gap-3 pt-2">
+              {[
+                { label: "General & Product Inquiries", email: "info@takinmart.bt" },
+                { label: "24/7 Orders & Support", email: "support@takinmart.bt" },
+                { label: "Operations & Warehouse", email: "office@takinmart.bt" },
+                { label: "Wholesale & B2B Partners", email: "bdm@takinmart.bt" },
+                { label: "General Manager Escalations", email: "gm@takinmart.bt" },
+                { label: "Executive Leadership", email: "ceo@takinmart.bt" },
+              ].map(({ label, email }) => (
+                <div key={email} className="rounded-xl border border-border/70 p-3 bg-secondary/20">
+                  <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">{label}</div>
+                  <a href={`mailto:${email}`} className="text-xs font-bold text-primary hover:underline mt-0.5 block">
+                    {email}
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex gap-4 items-start bg-card border border-border rounded-2xl p-6">
+            <div className="h-11 w-11 rounded-full bg-secondary grid place-items-center shrink-0">
+              <MapPin className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-semibold">Bhutan Head Office</h3>
+              <p className="text-muted-foreground text-sm mt-1">
+                Takin Mart Agro Hub, Norzin Lam 2, Post Box 1100, Thimphu, Kingdom of Bhutan
+              </p>
+            </div>
+          </div>
         </div>
         <form onSubmit={submit} className="bg-card border border-border rounded-2xl p-6 space-y-3">
           <input className={input} required maxLength={120} placeholder="Your name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
