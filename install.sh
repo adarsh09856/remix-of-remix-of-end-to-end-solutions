@@ -110,9 +110,18 @@ resolve_free_port() {
     printf '%s\n' "$port"
 }
 
-# Allow passing custom starting port as argument (e.g. ./install.sh 4000) or default to safe range 4000
-BASE_PORT_PARAM="${1:-${PORT:-4000}}"
-WEB_PORT=$(resolve_free_port "$BASE_PORT_PARAM" "TakinMart Web Server")
+EXISTING_PORT=""
+if [ -f ".env" ]; then
+    EXISTING_PORT=$(grep -E "^PORT=" .env | cut -d '=' -f2 | tr -d ' "\r' || true)
+fi
+
+if [ -n "$EXISTING_PORT" ]; then
+    WEB_PORT="$EXISTING_PORT"
+    log_success "Using already configured port: ${BOLD}${WEB_PORT}${NC} (no change needed)."
+else
+    log_info "[1/5] Scanning for available free port..."
+    WEB_PORT=$(resolve_free_port 3000 "TakinMart Web Server")
+fi
 
 # 2. Write .env with exact user credentials and the verified free port
 log_info "[2/5] Configuring .env with aaPanel credentials and free port ${WEB_PORT}..."
