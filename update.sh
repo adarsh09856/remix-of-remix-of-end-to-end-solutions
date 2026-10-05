@@ -11,7 +11,8 @@ PORT=4000
 echo "==> [1/4] Pulling latest updates from git repository..."
 git pull origin main
 
-echo "==> [2/4] Building production application..."
+echo "==> [2/4] Installing dependencies & building production application..."
+npm install --prefer-offline --no-audit 2>/dev/null || npm install
 export NITRO_PRESET="node-server"
 npm run build
 
