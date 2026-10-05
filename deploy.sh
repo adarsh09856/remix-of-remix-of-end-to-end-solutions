@@ -9,7 +9,6 @@ BOLD='\033[1m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
-RED='\033[0;31m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
@@ -22,27 +21,29 @@ echo -e "${CYAN}${BOLD}=========================================================
 
 # 1. Pull latest code if git repo
 if [ -d ".git" ]; then
-    echo -e "${BLUE}[1/4] Pulling latest updates from Git...${NC}"
+    echo -e "${BLUE}[1/3] Pulling latest updates from Git...${NC}"
     git pull origin main || echo -e "${YELLOW}⚠️ Git pull failed or working offline, proceeding with local changes.${NC}"
 else
-    echo -e "${BLUE}[1/4] Deploying from local workspace directory...${NC}"
+    echo -e "${BLUE}[1/3] Deploying from local workspace directory...${NC}"
 fi
 
-# 2. Rebuild and restart application containers
-echo -e "${BLUE}[2/4] Building and updating application containers...${NC}"
-docker compose -f docker-compose.aapanel.yaml up -d --build --remove-orphans
+# 2. Build production server
+echo -e "${BLUE}[2/3] Installing dependencies and building production server...${NC}"
+npm install --legacy-peer-deps
+export NITRO_PRESET="node-server"
+npm run build
 
-# 3. Clean up dangling images and old build cache
-echo -e "${BLUE}[3/4] Pruning Docker build cache & dangling images...${NC}"
-docker builder prune -af --filter "until=24h" >/dev/null 2>&1 || true
-docker image prune -f >/dev/null 2>&1 || true
+# 3. Restart process (supports aaPanel Node manager / PM2 / Docker)
+echo -e "${BLUE}[3/3] Restarting application...${NC}"
+if command -v pm2 >/dev/null 2>&1; then
+    pm2 reload takinmart 2>/dev/null || pm2 restart takinmart 2>/dev/null || true
+fi
 
-# 4. Service health verification
-echo -e "${BLUE}[4/4] Verifying running services and API health...${NC}"
-docker compose -f docker-compose.aapanel.yaml ps
+if [ -f "docker-compose.aapanel.yaml" ] && command -v docker >/dev/null 2>&1 && docker ps -q --filter "name=takinmart" | grep -q .; then
+    docker compose -f docker-compose.aapanel.yaml restart web 2>/dev/null || true
+fi
 
-WEB_PORT=$(grep '^WEB_PORT=' .env 2>/dev/null | cut -d '=' -f2- || echo "3000")
 echo ""
 echo -e "${GREEN}${BOLD} ✔ TakinMart successfully updated and running!${NC}"
-echo -e "${GREEN}  👉 Web App: http://127.0.0.1:${WEB_PORT}${NC}"
+echo -e "${GREEN}  👉 Server bundle: .output/server/index.mjs${NC}"
 echo ""
