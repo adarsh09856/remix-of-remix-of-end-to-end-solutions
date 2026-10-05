@@ -44,7 +44,19 @@ function AdminPage() {
     refetchOnWindowFocus: false,
   });
   const [tab, setTab] = useState<AdminTab>("overview");
-  const [demoAdmin, setDemoAdmin] = useState(false);
+  const [demoAdmin, setDemoAdmin] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("takinmart_admin_session") === "true";
+    }
+    return false;
+  });
+
+  const enterConsole = () => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("takinmart_admin_session", "true");
+    }
+    setDemoAdmin(true);
+  };
 
   if (isLoading) {
     return (
@@ -66,11 +78,11 @@ function AdminPage() {
         <AlertTriangle className="h-12 w-12 text-gold mx-auto mb-4" />
         <h1 className="font-display text-3xl">Admin Console</h1>
         <p className="text-muted-foreground mt-3">
-          Sign in with your store administrator account or enter the console to manage products and store operations.
+          Manage products, orders, coupons, inventory, and store operations.
         </p>
         <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3">
-          <Link to="/auth" search={{ redirect: "/admin" }} className="btn-hero">Sign in as Admin</Link>
-          <button onClick={() => setDemoAdmin(true)} className="btn-ghost-hero">Enter Console</button>
+          <button onClick={enterConsole} className="btn-hero">Enter Console</button>
+          <Link to="/auth" search={{ redirect: "/admin" }} className="btn-ghost-hero">Sign in with Account</Link>
         </div>
       </div>
     );
@@ -80,11 +92,13 @@ function AdminPage() {
     return (
       <div className="container-page py-24 text-center max-w-md mx-auto">
         <AlertTriangle className="h-12 w-12 text-gold mx-auto mb-4" />
-        <h1 className="font-display text-3xl">Admin Access Required</h1>
-        <p className="text-muted-foreground mt-3">Sign in with the store admin account to manage products, orders, customers, coupons, reviews, inventory, and settings.</p>
+        <h1 className="font-display text-3xl">Admin Console Access</h1>
+        <p className="text-muted-foreground mt-3">
+          Click below to enter the store admin console directly to manage products, categories, orders, and settings.
+        </p>
         <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3">
-          <Link to="/auth" search={{ redirect: "/admin" }} className="btn-hero">Sign in as Admin</Link>
-          <button onClick={() => setDemoAdmin(true)} className="btn-ghost-hero">Enter Console</button>
+          <button onClick={enterConsole} className="btn-hero">Enter Console</button>
+          <Link to="/auth" search={{ redirect: "/admin" }} className="btn-ghost-hero">Sign in as Admin</Link>
         </div>
       </div>
     );
