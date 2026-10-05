@@ -731,49 +731,87 @@ export const listCategories = createServerFn({ method: "GET" }).handler(async ()
   return FALLBACK_CATEGORIES;
 });
 
+const LEGACY_KEYWORDS = [
+  "sichuan",
+  "botanical",
+  "mushroom medley",
+  "pure agro",
+  "cordyceps tea capsules",
+  "lemongrass",
+  "dallae ray",
+  "takin cordyceps honey",
+  "takin botanical",
+  "dalle chilli paste pickle",
+  "takin bhutanese green",
+  "chirata herbal capsules",
+  "organics black turmeric",
+  "wild mountain honey",
+  "kingless",
+  "takin chitwan",
+  "traditional bhutanese dho",
+];
+
 async function syncAuthenticCatalog(supabase: any) {
   try {
-    const legacySlugs = [
-      "sichuan-red-peppercorn",
-      "takin-botanical-elixir",
-      "raw-himalayan-mushroom-medley",
-      "takin-pure-agro-spice",
-      "wild-ginger-capsules",
-      "takin-shilajit-capsules",
-      "takin-cordyceps-honey",
-      "chirata-herbal-capsules"
-    ];
-    for (const slug of legacySlugs) {
-      await supabase.from("products").update({ is_active: false }).eq("slug", slug);
+    const authenticSlugs = new Set(FALLBACK_PRODUCTS.map((p) => p.slug));
+
+    // 1. Remove/deactivate all products matching legacy keywords
+    for (const kw of LEGACY_KEYWORDS) {
+      await supabase.from("products").delete().ilike("name", `%${kw}%`);
+      await supabase.from("products").delete().ilike("slug", `%${kw}%`);
     }
 
+    // 2. Remove any product whose slug is not in the authentic list
+    const { data: allRows } = await supabase.from("products").select("id, slug");
+    if (allRows && allRows.length > 0) {
+      for (const row of allRows) {
+        if (!authenticSlugs.has(row.slug)) {
+          await supabase.from("products").delete().eq("id", row.id);
+        }
+      }
+    }
+
+    // 3. Upsert authentic categories
     for (const cat of FALLBACK_CATEGORIES) {
-      await supabase.from("categories").upsert({
-        name: cat.name,
-        slug: cat.slug,
-        description: cat.description,
-        image_url: cat.image_url,
-        sort_order: cat.sort_order,
-      }, { onConflict: "slug" });
+      await supabase.from("categories").upsert(
+        {
+          name: cat.name,
+          slug: cat.slug,
+          description: cat.description,
+          image_url: cat.image_url,
+          sort_order: cat.sort_order,
+        },
+        { onConflict: "slug" }
+      );
     }
 
+    const { data: dbCats } = await supabase.from("categories").select("id, slug");
+    const catMap = new Map((dbCats || []).map((c: any) => [c.slug, c.id]));
+
+    // 4. Upsert authentic 19 Jinlab products
     for (const p of FALLBACK_PRODUCTS) {
-      await supabase.from("products").upsert({
-        name: p.name,
-        slug: p.slug,
-        tagline: p.tagline,
-        description: p.description,
-        price_inr: p.price_inr,
-        unit: p.unit,
-        image_url: p.image_url,
-        badge: p.badge,
-        stock: p.stock ?? 50,
-        origin: p.region_of_origin || "Bhutan",
-        is_active: true,
-      }, { onConflict: "slug" });
+      const catSlug = p.categories?.slug || "wellness";
+      const catId = catMap.get(catSlug) || null;
+      await supabase.from("products").upsert(
+        {
+          name: p.name,
+          slug: p.slug,
+          tagline: p.tagline,
+          description: p.description,
+          price_inr: p.price_inr,
+          unit: p.unit,
+          image_url: p.image_url,
+          badge: p.badge,
+          stock: p.stock ?? 50,
+          origin: p.region_of_origin || "Bhutan",
+          category_id: catId,
+          is_active: true,
+        },
+        { onConflict: "slug" }
+      );
     }
   } catch (e) {
-    // Non-fatal background sync
+    console.error("[CatalogSync Error]", e);
   }
 }
 
@@ -799,20 +837,18 @@ export const listProducts = createServerFn({ method: "GET" })
         if (data.limit) q = q.limit(data.limit);
         const { data: rows, error } = await q;
         if (!error && rows && rows.length > 0) {
-          const hasLegacy = rows.some((r: any) =>
-            r.slug.includes("sichuan") ||
-            r.slug.includes("botanical-elixir") ||
-            r.slug.includes("mushroom-medley") ||
-            r.slug.includes("pure-agro") ||
-            r.name.includes("Sichuan") ||
-            r.name.includes("Botanical Elixir") ||
-            r.name.includes("Mushroom Medley")
-          );
+          const authenticSlugs = new Set(FALLBACK_PRODUCTS.map((p) => p.slug));
+          const hasLegacy = rows.some((r: any) => {
+            if (!authenticSlugs.has(r.slug)) return true;
+            const lowerName = (r.name || "").toLowerCase();
+            return LEGACY_KEYWORDS.some((kw) => lowerName.includes(kw));
+          });
 
           if (!hasLegacy) {
             return rows;
           }
 
+          // Trigger automatic database cleanup & sync in background
           syncAuthenticCatalog(supabase).catch(() => {});
         }
       } catch {

@@ -247,6 +247,38 @@ ON CONFLICT (slug) DO UPDATE SET
   image_url = EXCLUDED.image_url,
   sort_order = EXCLUDED.sort_order;
 
+-- Remove all legacy placeholder products if present
+DELETE FROM public.products WHERE slug NOT IN (
+  'jinlab-golden-trio-capsules',
+  'jinlab-lakadong-turmeric-powder',
+  'jinlab-bhutan-ghee',
+  'jinlab-dalle-dry-fish-pickle',
+  'jinlab-cordyceps-honey',
+  'jinlab-himalayan-cordyceps-herbal-tea',
+  'jinlab-dalle-garlic-pickle',
+  'jinlab-beetroot-capsules',
+  'jinlab-fire-balls-dalle-paste-pickle',
+  'jinlab-avocado-jam',
+  'jinlab-chirata-detox-capsules',
+  'jinlab-organic-turmeric-capsules',
+  'jinlab-natural-red-kiwi-jam',
+  'jinlab-organic-black-turmeric-capsules',
+  'jinlab-premium-multi-flora-honey',
+  'jinlab-bhutanese-shilajit',
+  'jinlab-stingless-bee-puthka-honey',
+  'jinlab-black-ginger-capsules',
+  'jinlab-chirata-capsules'
+) OR name ILIKE '%sichuan%'
+  OR name ILIKE '%botanical%'
+  OR name ILIKE '%mushroom medley%'
+  OR name ILIKE '%pure agro%'
+  OR name ILIKE '%lemongrass%'
+  OR name ILIKE '%dallae ray%'
+  OR name ILIKE '%takin cordyceps%'
+  OR name ILIKE '%chitwan%'
+  OR name ILIKE '%kingless%'
+  OR name ILIKE '%traditional bhutanese dho%';
+
 -- Insert Jinlab Authentic Products
 INSERT INTO public.products (name, slug, tagline, description, price_inr, unit, image_url, badge, stock, origin, is_active, category_id) VALUES
 ('Golden Trio Capsules', 'jinlab-golden-trio-capsules', 'Turmeric · Ginger · Black Pepper blend', 'Synergistic botanical blend of organic Lakadong turmeric, highland ginger, and black pepper. Formulated to enhance bioavailability and provide daily anti-inflammatory and antioxidant support. Grown in carbon-negative Bhutan.', 2100, '60 capsules', '/products/golden-trio-capsules-poster.png', 'New', 45, 'Bhutan', true, (SELECT id FROM public.categories WHERE slug = 'wellness')),

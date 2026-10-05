@@ -38,18 +38,22 @@ export const adminListProducts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
+    const { FALLBACK_PRODUCTS } = await import("./products.functions");
     try {
       const { data, error } = await context.supabase
         .from("products")
         .select("*, categories(name)")
         .order("created_at", { ascending: false });
       if (!error && data && data.length > 0) {
-        return data;
+        const authenticSlugs = new Set(FALLBACK_PRODUCTS.map((p) => p.slug));
+        const hasLegacy = data.some((r: any) => !authenticSlugs.has(r.slug));
+        if (!hasLegacy) {
+          return data;
+        }
       }
     } catch (e) {
       // Fall through to fallback catalog
     }
-    const { FALLBACK_PRODUCTS } = await import("./products.functions");
     return FALLBACK_PRODUCTS.map((p) => ({
       ...p,
       is_active: true,
