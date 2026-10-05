@@ -1,0 +1,70 @@
+# ==============================================================================
+# TakinMart E-Commerce — aaPanel & VPS Production Compose
+# Runs alongside aaPanel / Nginx Host
+# Uses localhost-bound ports to prevent conflicts with aaPanel Port 80/443
+# ==============================================================================
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: takinmart_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-takin_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-takin_secure_pass_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-takinmart_db}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - takinmart_pgdata:/var/lib/postgresql/data
+      - ./database/aapanel-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-takin_admin} -d ${POSTGRES_DB:-takinmart_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1024M
+    networks:
+      - takinmart-network
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: takinmart-web:latest
+    container_name: takinmart_web
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: "3000"
+      NODE_ENV: "production"
+      APP_URL: "${APP_URL:-https://takinmart.bt}"
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-takin_admin}:${POSTGRES_PASSWORD:-takin_secure_pass_2026}@postgres:5432/${POSTGRES_DB:-takinmart_db}"
+      VITE_SUPABASE_URL: "${VITE_SUPABASE_URL:-}"
+      VITE_SUPABASE_PUBLISHABLE_KEY: "${VITE_SUPABASE_PUBLISHABLE_KEY:-}"
+      SUPABASE_URL: "${SUPABASE_URL:-}"
+      SUPABASE_PUBLISHABLE_KEY: "${SUPABASE_PUBLISHABLE_KEY:-}"
+      SUPABASE_SERVICE_ROLE_KEY: "${SUPABASE_SERVICE_ROLE_KEY:-}"
+    ports:
+      - "127.0.0.1:${WEB_PORT:-3000}:3000"
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1024M
+    networks:
+      - takinmart-network
+
+volumes:
+  takinmart_pgdata:
+    driver: local
+
+networks:
+  takinmart-network:
+    driver: bridge
