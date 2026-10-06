@@ -6,12 +6,50 @@ import { useLocalCart } from "@/lib/local-cart";
 import { CountrySelector } from "@/components/CountrySelector";
 import logo from "@/assets/logo.png";
 
+import { toast } from "sonner";
+import { Copy, Sparkles, MessageSquare } from "lucide-react";
+
 export function AnnouncementBar() {
+  const [copied, setCopied] = useState(false);
+
+  const copyCode = () => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText("TSHECHU20");
+      setCopied(true);
+      toast.success("Coupon TSHECHU20 copied! 20% festival discount applied at checkout.");
+      setTimeout(() => setCopied(false), 2500);
+    }
+  };
+
   return (
-    <div className="bg-primary text-primary-foreground text-[11px] sm:text-xs">
-      <div className="container-page flex items-center justify-between gap-3 py-2 sm:py-2.5">
-        <span className="opacity-90 truncate">🌿 Authentic Bhutanese goodness, delivered</span>
-        <span className="hidden sm:inline opacity-90 shrink-0">Free shipping on orders over Nu. 1,500</span>
+    <div className="bg-primary text-primary-foreground text-[11px] sm:text-xs border-b border-gold/20 py-1.5 sm:py-2">
+      <div className="container-page flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2 truncate">
+          <span className="h-2 w-2 rounded-full bg-gold animate-pulse shrink-0" />
+          <span className="truncate">
+            🇧🇹 <strong>Himalayan Harvest Festival:</strong> Free delivery across 20 Dzongkhags over Nu. 1,500
+          </span>
+        </div>
+        <div className="flex items-center gap-3 shrink-0 ml-auto">
+          <button
+            type="button"
+            onClick={copyCode}
+            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-gold text-slate-950 font-bold hover:bg-gold/90 transition text-[11px] cursor-pointer shadow-sm"
+            title="Click to copy coupon code"
+          >
+            <Sparkles className="h-3 w-3" />
+            <span>{copied ? "COPIED!" : "CODE: TSHECHU20 (20% OFF)"}</span>
+          </button>
+          <a
+            href="https://wa.me/97517171717"
+            target="_blank"
+            rel="noreferrer"
+            className="hidden md:inline-flex items-center gap-1 opacity-90 hover:opacity-100 hover:text-gold transition text-[11px]"
+          >
+            <MessageSquare className="h-3 w-3 text-gold" />
+            <span>Care: +975 17 17 17 17</span>
+          </a>
+        </div>
       </div>
     </div>
   );

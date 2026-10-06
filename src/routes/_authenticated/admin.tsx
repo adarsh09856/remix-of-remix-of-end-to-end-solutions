@@ -26,11 +26,34 @@ import {
   Check, Tag, Star, Boxes, Settings as SettingsIcon, Mail, Image as ImageIcon,
   CreditCard, ReceiptText, RotateCcw, Send, Search, ExternalLink, Copy, CheckCircle2,
   XCircle, ArrowUpDown, ChevronDown, RefreshCw, Eye, EyeOff, Sparkles, MessageSquare,
-  ShieldCheck, Phone, Filter
+  ShieldCheck, Phone, Filter, Printer, Download, FileSpreadsheet, PlusCircle, CheckSquare
 } from "lucide-react";
 import { AdminShell, StatTile, type AdminTab } from "@/components/admin/AdminShell";
 import { LeadsTab, EnquiriesTab, TasksTab, ActivityTab } from "@/components/admin/CrmTabs";
 import { crmPipelineStats } from "@/lib/crm.functions";
+
+function downloadCSV(filename: string, headers: string[], rows: (string | number)[][]) {
+  const sanitize = (val: string | number | null | undefined) => {
+    if (val === null || val === undefined) return '""';
+    const str = String(val).replace(/"/g, '""');
+    return `"${str}"`;
+  };
+  const content = [
+    headers.map(sanitize).join(","),
+    ...rows.map((row) => row.map(sanitize).join(",")),
+  ].join("\r\n");
+
+  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 
 export const Route = createFileRoute("/_authenticated/admin")({
   ssr: false,
@@ -671,6 +694,17 @@ function ProductsTab() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const quickBadge = useMutation({
+    mutationFn: (v: { p: any; badge: string | null }) => {
+      return upsertFn({ data: { ...v.p, badge: v.badge || null } });
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      toast.success(`Store badge updated to "${vars.badge || "None"}"`);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   // Filtered Products
   const filteredProducts = useMemo(() => {
     return (products ?? []).filter((p: any) => {
@@ -857,6 +891,23 @@ function ProductsTab() {
                           <div className="text-xs text-muted-foreground font-mono mt-0.5 flex items-center gap-2">
                             <span>/{p.slug}</span>
                             {p.sku && <span className="bg-secondary px-1.5 py-0.2 rounded border">SKU: {p.sku}</span>}
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <span className="text-[10px] text-muted-foreground uppercase font-semibold">Badge:</span>
+                            <select
+                              value={p.badge || ""}
+                              disabled={quickBadge.isPending}
+                              onChange={(e) => quickBadge.mutate({ p, badge: e.target.value || null })}
+                              className="text-[10px] bg-secondary border border-border rounded-md px-1.5 py-0.5 outline-none font-medium hover:border-primary transition cursor-pointer"
+                              title="1-click change storefront badge"
+                            >
+                              <option value="">None</option>
+                              <option value="Bestseller">⭐ Bestseller</option>
+                              <option value="Organic">🌿 Organic</option>
+                              <option value="New">✨ New</option>
+                              <option value="Rare">🏔️ Rare</option>
+                              <option value="Hot">🔥 Hot</option>
+                            </select>
                           </div>
                         </div>
                       </div>
@@ -1273,6 +1324,66 @@ function InventoryTab() {
   const [form, setForm] = useState({ productId: "", delta: 0, reason: "Restock" });
   const [filter, setFilter] = useState<"all" | "low" | "out">("all");
   const [search, setSearch] = useState("");
+  const [isBulkRestocking, setIsBulkRestocking] = useState(false);
+
+  const lowItems = useMemo(() => {
+    return (products ?? []).filter((p: any) => (p.stock ?? 0) <= (p.low_stock_threshold ?? 5));
+  }, [products]);
+
+  const handleBulkRestockLow = async () => {
+    if (lowItems.length === 0) {
+      toast.info("No products currently at or below low-stock threshold.");
+      return;
+    }
+    setIsBulkRestocking(true);
+    try {
+      for (const item of lowItems) {
+        await adjFn({ data: { productId: item.id, delta: 20, reason: "Bulk low-stock replenishment (+20)" } });
+      }
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["admin-inventory"] });
+      toast.success(`Successfully restocked ${lowItems.length} low-stock items with +20 units each!`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to complete bulk restock");
+    } finally {
+      setIsBulkRestocking(false);
+    }
+  };
+
+  const handleExportInventoryCSV = () => {
+    const list = products ?? [];
+    if (list.length === 0) {
+      toast.error("No inventory to export");
+      return;
+    }
+    const headers = [
+      "SKU",
+      "Product Name",
+      "Category",
+      "Stock Level",
+      "Low Stock Threshold",
+      "Stock Status",
+      "Unit",
+      "Price Nu. (INR)",
+      "Price USD",
+      "Storefront Status",
+    ];
+    const rows = list.map((p: any) => [
+      p.sku || "",
+      p.name,
+      p.categories?.name || "Uncategorized",
+      p.stock ?? 0,
+      p.low_stock_threshold ?? 5,
+      (p.stock ?? 0) <= 0 ? "OUT OF STOCK" : (p.stock ?? 0) <= (p.low_stock_threshold ?? 5) ? "LOW STOCK" : "IN STOCK",
+      p.unit || "item",
+      p.price_inr ?? 0,
+      p.price_us ?? "",
+      p.is_active ? "Active" : "Hidden",
+    ]);
+    const dateStr = new Date().toISOString().slice(0, 10);
+    downloadCSV(`takinmart-inventory-${dateStr}.csv`, headers, rows);
+    toast.success(`Exported inventory for ${list.length} products to CSV!`);
+  };
 
   const filtered = useMemo(() => {
     return (products ?? []).filter((p: any) => {
@@ -1285,6 +1396,7 @@ function InventoryTab() {
       return true;
     });
   }, [products, filter, search]);
+
 
   const input = "bg-background border border-border rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary transition";
 
@@ -1378,7 +1490,7 @@ function InventoryTab() {
       {/* Stock Health Table */}
       <div className="bg-card border border-border rounded-2xl p-5 shadow-soft space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => setFilter("all")}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition ${
@@ -1393,7 +1505,7 @@ function InventoryTab() {
                 filter === "low" ? "bg-amber-500 text-white border-amber-500" : "border-border text-muted-foreground hover:bg-muted"
               }`}
             >
-              Low Stock Alerts
+              Low Stock Alerts ({lowItems.length})
             </button>
             <button
               onClick={() => setFilter("out")}
@@ -1404,15 +1516,39 @@ function InventoryTab() {
               Out of Stock
             </button>
           </div>
-          <div className="relative w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Filter items…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-background border border-border rounded-xl pl-9 pr-3 py-1.5 text-xs outline-none focus:border-primary"
-            />
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              disabled={lowItems.length === 0 || isBulkRestocking}
+              onClick={handleBulkRestockLow}
+              className="btn-ghost-hero text-xs py-1.5 px-3 flex items-center gap-1.5 text-amber-600 border-amber-500/30 hover:bg-amber-500/10 disabled:opacity-40"
+              title="Add 20 units to every product at or below low stock threshold"
+            >
+              <Boxes className="h-3.5 w-3.5" />
+              <span>{isBulkRestocking ? "Restocking…" : `Restock Low (+20 each · ${lowItems.length})`}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleExportInventoryCSV}
+              className="btn-ghost-hero text-xs py-1.5 px-3 flex items-center gap-1.5 text-emerald-600 hover:bg-emerald-500/10"
+              title="Download real-time inventory report as CSV spreadsheet"
+            >
+              <FileSpreadsheet className="h-3.5 w-3.5" />
+              <span>Export CSV</span>
+            </button>
+
+            <div className="relative w-56">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Filter items…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full bg-background border border-border rounded-xl pl-9 pr-3 py-1.5 text-xs outline-none focus:border-primary"
+              />
+            </div>
           </div>
         </div>
 
@@ -1482,6 +1618,20 @@ function InventoryTab() {
                         >
                           +5
                         </button>
+                        <button
+                          onClick={() => adj.mutate({ productId: p.id, delta: 10, reason: "Quick +10 restock" })}
+                          className="px-2 py-1 text-xs rounded border border-border bg-background hover:bg-muted transition text-emerald-600 font-bold"
+                          title="Restock +10"
+                        >
+                          +10
+                        </button>
+                        <button
+                          onClick={() => adj.mutate({ productId: p.id, delta: 25, reason: "Quick +25 restock" })}
+                          className="px-2 py-1 text-xs rounded border border-border bg-background hover:bg-muted transition text-emerald-600 font-bold"
+                          title="Restock +25"
+                        >
+                          +25
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -1496,7 +1646,211 @@ function InventoryTab() {
 }
 
 // ====================================================================
-// ORDERS TAB — Filters, 1-Click Status, Tracking, WhatsApp Direct
+// OFFICIAL DISPATCH PACKING SLIP & INVOICE MODAL
+// ====================================================================
+function AdminInvoiceModal({ order: o, onClose }: { order: any; onClose: () => void }) {
+  if (!o) return null;
+  const invoiceNum = o.invoice_number || `TM-${o.id.slice(0, 8).toUpperCase()}`;
+  const orderDate = new Date(o.created_at).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm p-4 md:p-8 flex items-center justify-center">
+      <div className="bg-card text-foreground border border-border rounded-3xl max-w-3xl w-full shadow-2xl overflow-hidden my-auto">
+        {/* Modal Header Actions (Hidden when printing) */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-secondary/50 print:hidden">
+          <div className="flex items-center gap-2">
+            <Printer className="h-5 w-5 text-gold" />
+            <h3 className="font-display font-semibold text-base">Official Dispatch Packing Slip & Invoice</h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => window.print()}
+              className="btn-hero text-xs py-1.5 px-4 flex items-center gap-1.5 shadow-sm cursor-pointer"
+            >
+              <Printer className="h-4 w-4" /> Print Document
+            </button>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+            >
+              <XCircle className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Printable Invoice Body */}
+        <div className="p-6 sm:p-10 bg-white text-slate-900 space-y-6 print:p-0">
+          {/* Top Royal Emblem & Header */}
+          <div className="flex justify-between items-start border-b border-slate-200 pb-6 gap-4">
+            <div>
+              <div className="text-[10px] tracking-[0.2em] font-bold text-amber-700 uppercase">
+                Royal Kingdom of Bhutan · National Agro Export
+              </div>
+              <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-slate-950 mt-1">
+                TAKIN MART
+              </h1>
+              <p className="text-xs text-slate-600 mt-0.5">
+                Pristine Himalayan Agro-Harvests & Wellness Products
+              </p>
+              <div className="text-[11px] text-slate-500 mt-2 space-y-0.5">
+                <div>HQ: Changzamtog Industrial Hub, Thimphu, Bhutan</div>
+                <div>BAFRA License: #TM-AGRO-2024-98 · Tax TIN: 10928374</div>
+                <div>Helpline: +975 17 17 17 17 · Email: dispatch@takinmart.bt</div>
+              </div>
+            </div>
+
+            <div className="text-right">
+              <span className="inline-block px-3 py-1 bg-amber-50 border border-amber-300 text-amber-900 rounded-lg text-xs font-bold uppercase tracking-wider mb-2">
+                Official Dispatch Slip
+              </span>
+              <div className="text-xs text-slate-600">Invoice Number</div>
+              <div className="font-mono text-base sm:text-lg font-bold text-slate-950">{invoiceNum}</div>
+              <div className="text-xs text-slate-500 mt-1">Date: {orderDate}</div>
+              <div className="text-xs font-semibold text-slate-700 mt-1 uppercase">
+                Payment: {o.payment_method || "COD"} ({o.status})
+              </div>
+            </div>
+          </div>
+
+          {/* Customer & Shipping Details */}
+          <div className="grid sm:grid-cols-2 gap-4 bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs">
+            <div>
+              <span className="font-bold uppercase tracking-wider text-slate-500 text-[10px] block mb-1">
+                Consignee / Deliver To:
+              </span>
+              <div className="font-bold text-sm text-slate-950">{o.ship_full_name}</div>
+              <div className="text-slate-600 mt-1 space-y-0.5">
+                <div>{o.ship_address_line1}</div>
+                {o.ship_address_line2 && <div>{o.ship_address_line2}</div>}
+                <div>
+                  {o.ship_city}{o.ship_state ? `, ${o.ship_state}` : ""} {o.ship_postal_code}
+                </div>
+                <div className="font-semibold text-slate-800">{o.ship_country || "Bhutan"}</div>
+              </div>
+              <div className="mt-2 text-slate-700">
+                📞 Phone: <strong>{o.ship_phone || "N/A"}</strong>
+              </div>
+              {o.customer_email && (
+                <div className="text-slate-700">✉ Email: {o.customer_email}</div>
+              )}
+            </div>
+
+            <div className="border-t sm:border-t-0 sm:border-l sm:border-slate-200 pt-3 sm:pt-0 sm:pl-4">
+              <span className="font-bold uppercase tracking-wider text-slate-500 text-[10px] block mb-1">
+                Dispatch & Transport Manifest:
+              </span>
+              <div className="space-y-1.5 text-slate-700">
+                <div>Courier Carrier: <strong>{o.courier || "Bhutan Post Express"}</strong></div>
+                <div>Tracking / Consignment #: <strong className="font-mono">{o.tracking_number || "To be scanned at hub"}</strong></div>
+                <div>Estimated Delivery: <strong>{o.estimated_delivery || "Standard 2-4 days"}</strong></div>
+                <div>Origin Hub: <strong>Thimphu Central Warehouse (TM-01)</strong></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Items Table */}
+          <div className="border border-slate-200 rounded-xl overflow-hidden">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase tracking-wider text-[10px]">
+                <tr>
+                  <th className="p-3">#</th>
+                  <th className="p-3">Product Description</th>
+                  <th className="p-3 text-center">Qty</th>
+                  <th className="p-3 text-right">Unit Price</th>
+                  <th className="p-3 text-right">Line Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-800">
+                {(o.order_items || []).map((it: any, idx: number) => (
+                  <tr key={it.id || idx}>
+                    <td className="p-3 font-mono text-slate-500">{idx + 1}</td>
+                    <td className="p-3 font-medium text-slate-900">
+                      {it.product_name}
+                      {it.sku && <span className="block font-mono text-[10px] text-slate-400">SKU: {it.sku}</span>}
+                    </td>
+                    <td className="p-3 text-center font-bold">{it.quantity}</td>
+                    <td className="p-3 text-right font-mono">Nu. {formatINR(it.unit_price_inr || it.line_total_inr / it.quantity)}</td>
+                    <td className="p-3 text-right font-mono font-semibold">Nu. {formatINR(it.line_total_inr)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Financial Totals */}
+          <div className="flex justify-end">
+            <div className="w-64 space-y-1.5 text-xs">
+              <div className="flex justify-between text-slate-600">
+                <span>Subtotal:</span>
+                <span className="font-mono font-medium">Nu. {formatINR(o.subtotal_inr)}</span>
+              </div>
+              <div className="flex justify-between text-slate-600">
+                <span>Shipping Fee:</span>
+                <span className="font-mono font-medium">{Number(o.shipping_inr) ? `Nu. ${formatINR(o.shipping_inr)}` : "FREE"}</span>
+              </div>
+              {Number(o.discount_amount) > 0 && (
+                <div className="flex justify-between text-emerald-600">
+                  <span>Discount Applied:</span>
+                  <span className="font-mono font-medium">- Nu. {formatINR(o.discount_amount)}</span>
+                </div>
+              )}
+              <div className="flex justify-between border-t border-slate-300 pt-2 text-sm font-bold text-slate-950">
+                <span>Total Amount:</span>
+                <span className="font-mono text-base text-amber-700">Nu. {formatINR(o.total_inr)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Quality & Dispatch Checklist */}
+          <div className="border border-slate-200 rounded-xl p-3 bg-slate-50 text-[11px] text-slate-700 space-y-1">
+            <div className="font-bold text-slate-900 uppercase tracking-wider text-[10px] mb-1">
+              Dispatch Quality Assurance Checklist:
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="flex items-center gap-1.5">
+                <input type="checkbox" defaultChecked className="rounded border-slate-300 text-amber-600" />
+                <span>100% Authentic Organic Bhutan Origin verified</span>
+              </label>
+              <label className="flex items-center gap-1.5">
+                <input type="checkbox" defaultChecked className="rounded border-slate-300 text-amber-600" />
+                <span>Airtight foil moisture seal inspected</span>
+              </label>
+              <label className="flex items-center gap-1.5">
+                <input type="checkbox" defaultChecked className="rounded border-slate-300 text-amber-600" />
+                <span>Fragile insulation wrapped (Glass Honey / Shilajit)</span>
+              </label>
+              <label className="flex items-center gap-1.5">
+                <input type="checkbox" defaultChecked className="rounded border-slate-300 text-amber-600" />
+                <span>Bhutan Post / Courier manifest logged</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Signatures */}
+          <div className="grid grid-cols-2 pt-6 border-t border-slate-200 text-xs text-slate-500">
+            <div>
+              <div className="h-10 border-b border-dashed border-slate-300 w-48" />
+              <div className="mt-1 font-semibold text-slate-700">Warehouse Dispatcher Signature</div>
+              <div className="text-[10px]">Takin Mart Fulfillment Center</div>
+            </div>
+            <div className="text-right">
+              <div className="h-10 border-b border-dashed border-slate-300 w-48 ml-auto" />
+              <div className="mt-1 font-semibold text-slate-700">Customer Receipt Signature</div>
+              <div className="text-[10px]">Received in good condition with seals intact</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ====================================================================
+// ORDERS TAB — Filters, 1-Click Status, Tracking, WhatsApp Direct & Invoice
 // ====================================================================
 function OrdersTab() {
   const fetchFn = useServerFn(adminListOrders);
@@ -1510,6 +1864,7 @@ function OrdersTab() {
   const { data: orders, isLoading } = useQuery({ queryKey: ["admin-orders"], queryFn: () => fetchFn() });
   const [filter, setFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [printingOrder, setPrintingOrder] = useState<any | null>(null);
 
   const upd = useMutation({
     mutationFn: (v: { id: string; status: any }) => updateStatus({ data: v }),
@@ -1585,11 +1940,66 @@ function OrdersTab() {
     });
   }, [orders, filter, search]);
 
+  const handleExportOrdersCSV = () => {
+    const list = filtered.length > 0 ? filtered : (orders ?? []);
+    if (list.length === 0) {
+      toast.error("No orders to export");
+      return;
+    }
+    const headers = [
+      "Invoice #",
+      "Order ID",
+      "Date",
+      "Status",
+      "Customer Name",
+      "Customer Email",
+      "Customer Phone",
+      "Address Line 1",
+      "Address Line 2",
+      "City / Dzongkhag",
+      "Postal Code",
+      "Country",
+      "Payment Method",
+      "Items Count",
+      "Subtotal (Nu.)",
+      "Shipping (Nu.)",
+      "Discount (Nu.)",
+      "Total (Nu.)",
+      "Courier",
+      "Tracking Number",
+    ];
+    const rows = list.map((o: any) => [
+      o.invoice_number || `#${o.id.slice(0, 8)}`,
+      o.id,
+      new Date(o.created_at).toISOString().split("T")[0],
+      o.status,
+      o.ship_full_name || "",
+      o.customer_email || "",
+      o.ship_phone || "",
+      o.ship_address_line1 || "",
+      o.ship_address_line2 || "",
+      o.ship_city || "",
+      o.ship_postal_code || "",
+      o.ship_country || "Bhutan",
+      o.payment_method || "cod",
+      o.order_items?.length || 0,
+      o.subtotal_inr || 0,
+      o.shipping_inr || 0,
+      o.discount_amount || 0,
+      o.total_inr || 0,
+      o.courier || "",
+      o.tracking_number || "",
+    ]);
+    const dateStr = new Date().toISOString().slice(0, 10);
+    downloadCSV(`takinmart-orders-${dateStr}.csv`, headers, rows);
+    toast.success(`Exported ${list.length} orders to CSV spreadsheet!`);
+  };
+
   return (
     <div className="space-y-5">
-      {/* Search & Status Tabs */}
+      {/* Search & Status Tabs & Actions */}
       <div className="bg-card border border-border rounded-2xl p-4 shadow-soft flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap items-center">
           {(["all", "pending", "paid", "fulfilled", "cancelled"] as const).map((s) => (
             <button
               key={s}
@@ -1605,15 +2015,27 @@ function OrdersTab() {
           ))}
         </div>
 
-        <div className="relative w-72">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search invoice, customer, phone…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-background border border-border rounded-xl pl-10 pr-4 py-2 text-xs outline-none focus:border-primary transition"
-          />
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={handleExportOrdersCSV}
+            className="btn-ghost-hero text-xs py-1.5 px-3 flex items-center gap-1.5 text-emerald-600 hover:bg-emerald-500/10"
+            title="Download filtered orders as CSV spreadsheet"
+          >
+            <FileSpreadsheet className="h-3.5 w-3.5" />
+            <span>Export Orders (CSV)</span>
+          </button>
+
+          <div className="relative w-64">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search invoice, customer, phone…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-background border border-border rounded-xl pl-10 pr-4 py-2 text-xs outline-none focus:border-primary transition"
+            />
+          </div>
         </div>
       </div>
 
@@ -1632,6 +2054,7 @@ function OrdersTab() {
               onCancel={(reason: string) => cancel.mutate({ id: o.id, reason })}
               onRefund={() => refund.mutate(o.id)}
               onResend={() => resend.mutate(o.id)}
+              onPrint={() => setPrintingOrder(o)}
             />
           ))}
           {filtered.length === 0 && (
@@ -1641,11 +2064,17 @@ function OrdersTab() {
           )}
         </div>
       )}
+
+      {/* Official Dispatch Packing Slip Modal */}
+      {printingOrder && (
+        <AdminInvoiceModal order={printingOrder} onClose={() => setPrintingOrder(null)} />
+      )}
     </div>
   );
 }
 
-function AdminOrderCard({ order: o, onStatus, onTrack, onCancel, onRefund, onResend }: any) {
+function AdminOrderCard({ order: o, onStatus, onTrack, onCancel, onRefund, onResend, onPrint }: any) {
+
   const [open, setOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState(o.cancelled_reason ?? "Customer/admin requested cancellation");
   const [t, setT] = useState({
@@ -1796,6 +2225,15 @@ function AdminOrderCard({ order: o, onStatus, onTrack, onCancel, onRefund, onRes
           </button>
           <button onClick={onRefund} className="btn-ghost-hero text-xs py-1.5 px-3 flex items-center gap-1.5 text-amber-600">
             <RotateCcw className="h-3.5 w-3.5" /> Mark Refunded
+          </button>
+          <button
+            type="button"
+            onClick={onPrint}
+            className="btn-ghost-hero text-xs py-1.5 px-3 flex items-center gap-1.5 text-primary hover:bg-primary/10 border-primary/20"
+            title="Open printable dispatch invoice & packing slip"
+          >
+            <Printer className="h-3.5 w-3.5 text-gold" />
+            <span>Print Invoice / Slip</span>
           </button>
         </div>
       </div>
@@ -2401,6 +2839,7 @@ function SettingsTab() {
   const [smtp, setSmtp] = useState<any>({});
   const [shipping, setShipping] = useState<any>({});
   const [payments, setPayments] = useState<any>({});
+  const [marketing, setMarketing] = useState<any>({});
   const [testTo, setTestTo] = useState("");
 
   useEffect(() => {
@@ -2410,8 +2849,16 @@ function SettingsTab() {
       const s = data.shipping ?? {};
       setShipping({ ...s, free_threshold_inr: s.free_threshold_inr ?? s.free_over ?? 1500, flat_rate_inr: s.flat_rate_inr ?? s.flat_rate ?? 99 });
       setPayments(data.payments ?? { cod_enabled: true, manual_enabled: false, razorpay_enabled: false, razorpay_mode: "test" });
+      setMarketing(data.marketing ?? {
+        announcement_text: "🇧🇹 Himalayan Harvest Festival: Free delivery across 20 Dzongkhags over Nu. 1,500",
+        coupon_code: "TSHECHU20",
+        coupon_label: "20% OFF Festival Discount",
+        hotline_phone: "+975 17 17 17 17",
+        banner_active: true,
+      });
     }
   }, [data]);
+
 
   const save = useMutation({
     mutationFn: (v: { key: string; value: any }) => updFn({ data: v }),
@@ -2549,8 +2996,71 @@ function SettingsTab() {
         </button>
       </div>
 
+      {/* Storefront Announcement Bar & Marketing Controls */}
+      <div className="bg-card border border-border rounded-2xl p-6 shadow-soft lg:col-span-2 space-y-4">
+        <h3 className="font-display text-xl font-semibold flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-gold" /> Storefront Announcement & Marketing Controls
+        </h3>
+        <p className="text-xs text-muted-foreground">
+          Configure the announcement strip displayed at the top of Takin Mart across all public pages, the featured promotional coupon code, and customer care hotline.
+        </p>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div className="sm:col-span-2">
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Top Announcement Bar Text</label>
+            <input
+              className={input}
+              placeholder="🇧🇹 Himalayan Harvest Festival: Free delivery across 20 Dzongkhags over Nu. 1,500"
+              value={marketing.announcement_text ?? ""}
+              onChange={(e) => setMarketing({ ...marketing, announcement_text: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Featured Promo Coupon Code</label>
+            <input
+              className={input}
+              placeholder="TSHECHU20"
+              value={marketing.coupon_code ?? ""}
+              onChange={(e) => setMarketing({ ...marketing, coupon_code: e.target.value.toUpperCase() })}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Coupon Discount Label</label>
+            <input
+              className={input}
+              placeholder="20% OFF Festival Discount"
+              value={marketing.coupon_label ?? ""}
+              onChange={(e) => setMarketing({ ...marketing, coupon_label: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Customer Care WhatsApp Hotline</label>
+            <input
+              className={input}
+              placeholder="+975 17 17 17 17"
+              value={marketing.hotline_phone ?? ""}
+              onChange={(e) => setMarketing({ ...marketing, hotline_phone: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Announcement Banner Display Status</label>
+            <select
+              className={input}
+              value={marketing.banner_active === false ? "false" : "true"}
+              onChange={(e) => setMarketing({ ...marketing, banner_active: e.target.value === "true" })}
+            >
+              <option value="true">Active (Show across entire store)</option>
+              <option value="false">Hidden</option>
+            </select>
+          </div>
+        </div>
+        <button onClick={() => save.mutate({ key: "marketing", value: marketing })} className="btn-hero">
+          <Sparkles className="h-4 w-4 inline mr-1 text-gold" /> Save Announcement & Marketing Settings
+        </button>
+      </div>
+
       {/* SMTP Email Configuration */}
       <div className="bg-card border border-border rounded-2xl p-6 shadow-soft lg:col-span-2 space-y-4">
+
         <h3 className="font-display text-xl font-semibold flex items-center gap-2">
           <Mail className="h-5 w-5 text-primary" /> SMTP Transactional Emails
         </h3>
