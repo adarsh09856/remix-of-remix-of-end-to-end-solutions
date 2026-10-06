@@ -8,10 +8,10 @@
 
 @theme inline {
   --font-display: "Fraunces", ui-serif, Georgia, serif;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 3px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
@@ -34,56 +34,64 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-gold: var(--gold);
   --color-gold-foreground: var(--gold-foreground);
-  --color-cream: var(--cream);
+  --color-cream: #FAF6EE;
+  --color-oat: #F0E8D8;
+  --color-forest: #1F3D2B;
+  --color-honey: #C98A1B;
+  --color-shilajit: #3A2A20;
+  --color-terracotta: #B5523A;
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --shadow-soft: 0 8px 30px -12px color-mix(in oklab, var(--primary) 18%, transparent);
-  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.04), 0 8px 24px -8px oklch(0 0 0 / 0.06);
-  --shadow-hover: 0 20px 40px -16px color-mix(in oklab, var(--primary) 25%, transparent);
+  --shadow-soft: 0 15px 45px -10px rgba(31, 61, 43, 0.07);
+  --shadow-card: 0 4px 20px -2px rgba(58, 42, 32, 0.05);
+  --shadow-hover: 0 20px 45px -12px rgba(31, 61, 43, 0.12);
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 1.25rem; /* 20px */
 
-  /* Cream paper */
-  --background: oklch(0.985 0.012 90);
-  --foreground: oklch(0.22 0.035 145);
+  /* Himalayan Organic Apothecary Palette */
+  --background: #FAF6EE;         /* Warm Cream */
+  --foreground: #3A2A20;         /* Shilajit Brown Text */
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.035 145);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.035 145);
+  --card: #FFFFFF;               /* Pure White Card Base */
+  --card-foreground: #3A2A20;
+  --popover: #FFFFFF;
+  --popover-foreground: #3A2A20;
 
-  /* Deep Bhutanese forest green */
-  --primary: oklch(0.32 0.06 152);
-  --primary-foreground: oklch(0.985 0.012 90);
-  --primary-glow: oklch(0.45 0.09 150);
+  --primary: #1F3D2B;            /* Deep Forest Green */
+  --primary-foreground: #FAF6EE; /* Cream on Forest */
+  --primary-glow: #2D583E;
 
-  --secondary: oklch(0.94 0.015 90);
-  --secondary-foreground: oklch(0.32 0.06 152);
+  --secondary: #F0E8D8;          /* Oat Section Accent */
+  --secondary-foreground: #1F3D2B;
 
-  --muted: oklch(0.95 0.012 90);
-  --muted-foreground: oklch(0.46 0.03 130);
+  --muted: #F0E8D8;              /* Oat */
+  --muted-foreground: #736357;   /* Soft warm brown */
 
-  --accent: oklch(0.93 0.04 95);
-  --accent-foreground: oklch(0.32 0.06 152);
+  --accent: #C98A1B;             /* Honey Gold Accent */
+  --accent-foreground: #FAF6EE;
 
-  /* Saffron gold */
-  --gold: oklch(0.72 0.13 75);
-  --gold-foreground: oklch(0.22 0.035 145);
+  --gold: #C98A1B;               /* Honey Gold */
+  --gold-foreground: #FAF6EE;
 
-  --cream: oklch(0.97 0.025 88);
+  --cream: #FAF6EE;
+  --oat: #F0E8D8;
+  --forest: #1F3D2B;
+  --honey: #C98A1B;
+  --shilajit: #3A2A20;
+  --terracotta: #B5523A;
 
-  --destructive: oklch(0.55 0.21 27);
-  --destructive-foreground: oklch(0.985 0 0);
+  --destructive: #B5523A;        /* Terracotta */
+  --destructive-foreground: #FAF6EE;
 
-  --border: oklch(0.9 0.018 90);
-  --input: oklch(0.9 0.018 90);
-  --ring: oklch(0.45 0.09 150);
+  --border: rgba(58, 42, 32, 0.12); /* Hairline */
+  --input: #FFFFFF;
+  --ring: #C98A1B;
 }
 
 .dark {
@@ -216,6 +224,40 @@
     filter: blur(8px);
     pointer-events: none;
   }
+}
+
+@utility tint-honey {
+  background-color: #FDF6E8;
+  border-color: #F4E3C1;
+}
+
+@utility tint-sage {
+  background-color: #F1F6F2;
+  border-color: #D7E6D9;
+}
+
+@utility tint-terracotta {
+  background-color: #FBF1EE;
+  border-color: #EFCFC7;
+}
+
+@utility tint-tea {
+  background-color: #F2F7F2;
+  border-color: #D8E9D9;
+}
+
+@utility tint-grain {
+  background-color: #F8F4EC;
+  border-color: #EADFCB;
+}
+
+@utility arch-card {
+  border-top-left-radius: 80px;
+  border-top-right-radius: 80px;
+}
+
+@utility tnum {
+  font-variant-numeric: tabular-nums;
 }
 
 
