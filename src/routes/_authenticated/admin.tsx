@@ -2895,7 +2895,7 @@ function SettingsTab() {
           </div>
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">Support Phone</label>
-            <input className={input} placeholder="+975 17 12 34 56" value={store.support_phone ?? ""} onChange={(e) => setStore({ ...store, support_phone: e.target.value })} />
+            <input className={input} placeholder="+975-1797-0050" value={store.support_phone ?? ""} onChange={(e) => setStore({ ...store, support_phone: e.target.value })} />
           </div>
           <button onClick={() => save.mutate({ key: "store", value: store })} className="btn-hero w-full">
             Save Store Info
@@ -3036,7 +3036,7 @@ function SettingsTab() {
             <label className="block text-xs font-medium text-muted-foreground mb-1">Customer Care WhatsApp Hotline</label>
             <input
               className={input}
-              placeholder="+975 17 17 17 17"
+              placeholder="+91-8514889385"
               value={marketing.hotline_phone ?? ""}
               onChange={(e) => setMarketing({ ...marketing, hotline_phone: e.target.value })}
             />

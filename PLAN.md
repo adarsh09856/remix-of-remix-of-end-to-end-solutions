@@ -90,10 +90,10 @@ Operated in official sourcing collaboration with the **Handicraft Association of
 
 ## 6. Global Contact Desks & Support Channels
 
-- **Bhutan HQ & Fulfillment Center:** Norzin Lam, Thimphu, Bhutan | 📞 +975 17700185 / +975 1611 2222
-- **India Support Desk:** Jaigaon / Kolkata | 📞 +91 98320 00000 / +91 94340 00000
-- **Australia Support Desk:** Sydney | 📞 +61 2 8000 0000
-- **United Kingdom Support Desk:** London | 📞 +44 20 7946 0000
+- **Bhutan HQ & Fulfillment Center:** Norzin Lam, Thimphu, Bhutan | 📞 +975-1797-0050
+- **24/7 Official WhatsApp Desk:** 📞 +91-8514889385
+- **Australia Support Desk:** Sydney | 📞 +61-404-343-370
+- **United Kingdom Support Desk:** London | 📞 +44-7586203728
 
 ### Official Department Inboxes:
 - General Inquiries: `info@takinmart.bt`
