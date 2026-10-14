@@ -405,7 +405,7 @@ export function CartDrawer({
 
                 {/* Direct WhatsApp Quick Order */}
                 <a
-                  href={`https://wa.me/97517171717?text=${encodeURIComponent(
+                  href={`https://wa.me/918514889385?text=${encodeURIComponent(
                     `Hi Takin Mart, I would like to order: ${items
                       .map((i) => `${i.quantity}x ${i.product.name}`)
                       .join(", ")}. Total: Nu. ${grandTotal}.`
@@ -415,7 +415,7 @@ export function CartDrawer({
                   className="w-full flex items-center justify-center gap-2 rounded-full border border-emerald-600/30 bg-emerald-50 text-emerald-800 py-2.5 text-xs font-semibold hover:bg-emerald-100 transition"
                 >
                   <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Order via WhatsApp Direct (+975 17 17 17 17)</span>
+                  <span>Order via WhatsApp Direct (+91-8514889385)</span>
                 </a>
               </div>
             </div>

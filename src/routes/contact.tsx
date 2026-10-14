@@ -59,12 +59,18 @@ function ContactPage() {
               <Phone className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h3 className="font-semibold">Phone & WhatsApp</h3>
+              <h3 className="font-semibold">Phone & WhatsApp Desks</h3>
               <p className="text-muted-foreground text-sm mt-1">
-                24/7 Customer Care: <a href="tel:+97517171717" className="font-semibold text-foreground hover:underline">+975 17 17 17 17</a>
+                24/7 Official WhatsApp: <a href="https://wa.me/918514889385" target="_blank" rel="noreferrer" className="font-semibold text-emerald-600 hover:underline">+91-8514889385</a>
               </p>
               <p className="text-muted-foreground text-sm mt-0.5">
                 Bhutan HQ Operations: <a href="tel:+97517970050" className="font-semibold text-foreground hover:underline">+975-1797-0050</a>
+              </p>
+              <p className="text-muted-foreground text-sm mt-0.5">
+                United Kingdom Desk: <a href="tel:+447586203728" className="font-semibold text-foreground hover:underline">+44-7586203728</a>
+              </p>
+              <p className="text-muted-foreground text-sm mt-0.5">
+                Australia Support Desk: <a href="tel:+61404343370" className="font-semibold text-foreground hover:underline">+61-404-343-370</a>
               </p>
             </div>
           </div>

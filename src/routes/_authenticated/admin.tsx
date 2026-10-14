@@ -1699,7 +1699,7 @@ function AdminInvoiceModal({ order: o, onClose }: { order: any; onClose: () => v
               <div className="text-[11px] text-slate-500 mt-2 space-y-0.5">
                 <div>HQ: Changzamtog Industrial Hub, Thimphu, Bhutan</div>
                 <div>BAFRA License: #TM-AGRO-2024-98 · Tax TIN: 10928374</div>
-                <div>Helpline: +975 17 17 17 17 · Email: dispatch@takinmart.bt</div>
+                <div>Helpline: +975-1797-0050 · WhatsApp: +91-8514889385 · Email: dispatch@takinmart.bt</div>
               </div>
             </div>
 
@@ -2853,7 +2853,7 @@ function SettingsTab() {
         announcement_text: "🇧🇹 Himalayan Harvest Festival: Free delivery across 20 Dzongkhags over Nu. 1,500",
         coupon_code: "TSHECHU20",
         coupon_label: "20% OFF Festival Discount",
-        hotline_phone: "+975 17 17 17 17",
+        hotline_phone: "+975-1797-0050",
         banner_active: true,
       });
     }

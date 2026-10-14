@@ -555,7 +555,7 @@ function Trust() {
     { title: "100% Authentic Bhutan", desc: "Certified Department of Agriculture origin" },
     { title: "RMA QR & Cash on Delivery", desc: "Safe, flexible payments across Bhutan" },
     { title: "Express Dispatch", desc: "Reliable shipping to all 20 Dzongkhags" },
-    { title: "24/7 Dedicated Care", desc: "+975 17 97 00 50 via WhatsApp" },
+    { title: "24/7 Dedicated Care", desc: "+975-1797-0050 / WhatsApp +91-8514889385" },
   ];
 
   return (

@@ -42,9 +42,9 @@ const ANNOUNCEMENTS = [
   },
   {
     type: "care",
-    text: "Care: +975 17 17 17 17 (WhatsApp)",
+    text: "Care: +975-1797-0050 (WhatsApp +91-8514889385)",
     action: "whatsapp",
-    url: "https://wa.me/97517171717",
+    url: "https://wa.me/918514889385",
   },
 ];
 
@@ -673,13 +673,19 @@ export function Header() {
 
             <div className="mt-5 pt-4 border-t border-[#EADFCB] flex flex-col gap-2.5 text-xs text-[#3A2A20]/75">
               <a
-                href="https://wa.me/97517171717"
+                href="https://wa.me/918514889385"
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 text-[#1F3D2B] font-semibold"
               >
                 <Phone className="h-4 w-4 text-[#C98A1B]" />
-                WhatsApp Care: +975 17 17 17 17
+                WhatsApp Care: +91-8514889385
+              </a>
+              <a
+                href="tel:+97517970050"
+                className="inline-flex items-center gap-2 text-[#3A2A20]/80 hover:text-[#1F3D2B]"
+              >
+                HQ Operations: +975-1797-0050
               </a>
               <p className="text-[11px] text-[#3A2A20]/60">
                 Pan-Bhutan express shipping across all 20 Dzongkhags.
@@ -896,15 +902,27 @@ export function Footer() {
           </ul>
           <div className="mt-4 pt-3 border-t border-[#FAF6EE]/15 text-xs text-[#FAF6EE]/85 space-y-1">
             <p>
-              Hotline:{" "}
-              <a href="tel:+97517171717" className="font-semibold text-[#FAF6EE] hover:underline">
-                +975 17 17 17 17
+              WhatsApp 24/7:{" "}
+              <a href="https://wa.me/918514889385" target="_blank" rel="noreferrer" className="font-semibold text-emerald-400 hover:underline">
+                +91-8514889385
               </a>
             </p>
             <p>
               HQ Desk:{" "}
               <a href="tel:+97517970050" className="font-semibold text-[#FAF6EE] hover:underline">
                 +975-1797-0050
+              </a>
+            </p>
+            <p>
+              UK Desk:{" "}
+              <a href="tel:+447586203728" className="font-semibold text-[#FAF6EE] hover:underline">
+                +44-7586203728
+              </a>
+            </p>
+            <p>
+              Australia Desk:{" "}
+              <a href="tel:+61404343370" className="font-semibold text-[#FAF6EE] hover:underline">
+                +61-404-343-370
               </a>
             </p>
           </div>
