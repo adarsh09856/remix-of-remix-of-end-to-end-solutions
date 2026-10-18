@@ -118,7 +118,7 @@ function RootComponent() {
       <AuthSync />
       <div className="flex min-h-screen flex-col" suppressHydrationWarning>
         <Header />
-        <main className="flex-1">
+        <main className="flex-1 pb-16 lg:pb-0">
           <Outlet />
         </main>
         <Footer />

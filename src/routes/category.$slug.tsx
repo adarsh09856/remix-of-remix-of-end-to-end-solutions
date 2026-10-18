@@ -44,17 +44,17 @@ function CategoryPage() {
       <section className="relative h-72 overflow-hidden">
         {category.image_url && <img src={resolveAsset(category.image_url)} alt="" className="absolute inset-0 h-full w-full object-cover" />}
         <div className="absolute inset-0 bg-gradient-to-t from-primary/85 via-primary/40" />
-        <div className="relative container-page h-full flex flex-col justify-end pb-10 text-primary-foreground">
+        <div className="relative container-page h-full flex flex-col justify-end pb-8 sm:pb-10 text-primary-foreground">
           <span className="eyebrow" style={{ color: "var(--gold)" }}>Category</span>
-          <h1 className="font-display text-5xl mt-2">{category.name}</h1>
-          {category.description && <p className="mt-2 max-w-xl opacity-90">{category.description}</p>}
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl mt-1.5 font-bold">{category.name}</h1>
+          {category.description && <p className="mt-2 max-w-xl text-xs sm:text-sm opacity-90">{category.description}</p>}
         </div>
       </section>
-      <div className="container-page py-12">
+      <div className="container-page py-8 sm:py-12">
         {products.length === 0 ? (
           <p className="text-center text-muted-foreground py-20">No products in this category yet.</p>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
             {products.map((p) => <ProductCard key={p.id} product={p as any} />)}
           </div>
         )}

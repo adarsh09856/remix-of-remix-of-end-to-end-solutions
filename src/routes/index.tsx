@@ -101,7 +101,7 @@ function Hero() {
             <span>100% Certified Bhutan Organic · Carbon-Negative Nation</span>
           </div>
 
-          <h1 className="font-display font-semibold text-primary leading-[0.95] tracking-[-0.03em] text-[clamp(2.8rem,7vw,6.5rem)]">
+          <h1 className="font-display font-semibold text-primary leading-[1.02] sm:leading-[0.95] tracking-[-0.03em] text-[clamp(2.1rem,6vw,5.5rem)]">
             Pure by <em className="not-italic text-gold font-normal italic">nature.</em>
             <br />
             Grown in <span className="relative inline-block">
@@ -112,25 +112,25 @@ function Hero() {
             </span>
           </h1>
 
-          <p className="mt-6 text-base sm:text-lg text-foreground/80 leading-relaxed font-light max-w-xl">
+          <p className="mt-4 sm:mt-6 text-sm sm:text-lg text-foreground/80 leading-relaxed font-light max-w-xl">
             Sourced directly from remote high-altitude Himalayan valleys: wild multi-flora honey, pure Shilajit resin, heritage red rice, and mountain wellness elixirs harvested by traditional farming families.
           </p>
 
           {/* Instant Search Bar */}
-          <form onSubmit={handleSearch} className="mt-8 max-w-lg rounded-full border border-border bg-card p-1.5 shadow-soft flex items-center gap-2">
-            <div className="flex items-center gap-2.5 px-3.5 flex-1">
+          <form onSubmit={handleSearch} className="mt-6 sm:mt-8 max-w-lg rounded-full border border-border bg-card p-1 sm:p-1.5 shadow-soft flex items-center gap-1.5 sm:gap-2">
+            <div className="flex items-center gap-2 px-3 sm:px-3.5 flex-1 min-w-0">
               <Search className="h-4 w-4 text-gold shrink-0" />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search wild honey, shilajit, red rice, pickles…"
-                className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                placeholder="Search wild honey, shilajit, red rice..."
+                className="w-full bg-transparent text-xs sm:text-sm text-foreground outline-none placeholder:text-muted-foreground truncate"
               />
             </div>
             <button
               type="submit"
-              className="rounded-full bg-gradient-gold px-5 py-2.5 text-xs font-bold text-primary-foreground shadow-soft hover:shadow-gold transition"
+              className="rounded-full bg-gradient-gold px-4 sm:px-5 py-2 sm:py-2.5 text-xs font-bold text-primary-foreground shadow-soft hover:shadow-gold transition shrink-0"
             >
               Search
             </button>
@@ -138,29 +138,29 @@ function Hero() {
 
           {/* Quick Search Chips */}
           <div className="mt-3 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-            <span className="font-semibold text-primary">Popular:</span>
+            <span className="font-semibold text-primary text-[11px]">Popular:</span>
             {["Shilajit", "Wild Honey", "Cordyceps Tea", "Red Rice", "Dalle Pickle"].map((chip) => (
               <button
                 key={chip}
                 type="button"
                 onClick={() => navigate({ to: "/shop", search: { q: chip } as any })}
-                className="rounded-full bg-secondary/80 border border-border px-2.5 py-0.5 hover:border-gold hover:text-gold transition text-[11px]"
+                className="rounded-full bg-secondary/80 border border-border px-2 py-0.5 hover:border-gold hover:text-gold transition text-[10px] sm:text-[11px]"
               >
                 {chip}
               </button>
             ))}
           </div>
 
-          <div className="mt-8 flex flex-wrap gap-3 items-center">
-            <Link to="/shop" className="btn-hero flex items-center gap-2">
+          <div className="mt-6 sm:mt-8 flex flex-wrap gap-2.5 sm:gap-3 items-center">
+            <Link to="/shop" className="btn-hero flex items-center gap-2 text-xs sm:text-sm px-5 py-2.5 sm:px-6 sm:py-3.5">
               <ShoppingBag className="h-4 w-4" /> Shop Complete Catalog
             </Link>
-            <Link to="/story" className="btn-ghost-hero">Read Farmer Story</Link>
+            <Link to="/story" className="btn-ghost-hero text-xs sm:text-sm px-5 py-2.5 sm:px-6 sm:py-3.5">Read Farmer Story</Link>
           </div>
         </div>
 
-        <div className="lg:col-span-5 relative">
-          <div className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-primary/10 shadow-[var(--shadow-hover)] border-2 border-border/80">
+        <div className="lg:col-span-5 relative mt-4 lg:mt-0">
+          <div className="relative aspect-[4/5] rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden bg-primary/10 shadow-[var(--shadow-hover)] border-2 border-border/80">
             <img
               src={heroProducts}
               alt="Curated Bhutanese agro products"
@@ -168,18 +168,18 @@ function Hero() {
               height={1280}
               className="absolute inset-0 h-full w-full object-cover"
             />
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-primary/85 via-primary/30 to-transparent p-6 text-cream">
-              <span className="text-[10px] uppercase tracking-[0.25em] text-gold font-bold">Pristine Valley Reserve</span>
-              <div className="font-display text-2xl font-bold mt-1">Highland Shilajit &amp; Wild Honey</div>
-              <div className="text-xs text-cream/80 mt-0.5">Cold extracted &amp; 100% natural from Bumthang</div>
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-primary/85 via-primary/30 to-transparent p-4 sm:p-6 text-cream">
+              <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.25em] text-gold font-bold">Pristine Valley Reserve</span>
+              <div className="font-display text-xl sm:text-2xl font-bold mt-1">Highland Shilajit &amp; Wild Honey</div>
+              <div className="text-[11px] sm:text-xs text-cream/80 mt-0.5">Cold extracted &amp; 100% natural from Bumthang</div>
             </div>
           </div>
 
           {/* Floating Organic Seal */}
-          <div className="absolute -top-4 -left-4 h-28 w-28 rounded-full bg-cream border-2 border-gold/60 grid place-items-center text-center shadow-[var(--shadow-soft)] rotate-[-6deg]">
+          <div className="hidden sm:grid absolute -top-4 -left-4 h-24 w-24 md:h-28 md:w-28 rounded-full bg-cream border-2 border-gold/60 place-items-center text-center shadow-[var(--shadow-soft)] rotate-[-6deg]">
             <div>
-              <div className="text-gold font-display text-xl font-bold leading-none">Bhutan</div>
-              <div className="text-[9px] font-bold uppercase tracking-widest text-primary mt-1">Pure Organic</div>
+              <div className="text-gold font-display text-lg md:text-xl font-bold leading-none">Bhutan</div>
+              <div className="text-[8px] md:text-[9px] font-bold uppercase tracking-widest text-primary mt-1">Pure Organic</div>
             </div>
           </div>
 
@@ -208,16 +208,16 @@ function ValueStrip() {
   ];
 
   return (
-    <section className="container-page -mt-8 relative z-20">
-      <div className="bg-card border border-border rounded-3xl shadow-[var(--shadow-soft)] grid grid-cols-2 lg:grid-cols-4 gap-4 p-6 sm:p-7">
+    <section className="container-page -mt-6 sm:-mt-8 relative z-20">
+      <div className="bg-card border border-border rounded-2xl sm:rounded-3xl shadow-[var(--shadow-soft)] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 p-4 sm:p-7">
         {items.map((it) => (
-          <div key={it.title} className="flex items-start gap-3.5">
-            <div className="h-11 w-11 rounded-2xl bg-secondary grid place-items-center shrink-0 border border-border">
-              <it.icon className="h-5 w-5 text-primary" />
+          <div key={it.title} className="flex items-start gap-3">
+            <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl sm:rounded-2xl bg-secondary grid place-items-center shrink-0 border border-border">
+              <it.icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
             <div>
-              <div className="font-bold text-sm text-foreground">{it.title}</div>
-              <div className="text-xs text-muted-foreground mt-0.5 leading-snug">{it.desc}</div>
+              <div className="font-bold text-xs sm:text-sm text-foreground">{it.title}</div>
+              <div className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 leading-snug">{it.desc}</div>
             </div>
           </div>
         ))}
@@ -229,22 +229,23 @@ function ValueStrip() {
 function Categories() {
   const { data: cats } = useSuspenseQuery(categoriesQuery());
   return (
-    <section className="container-page py-16 sm:py-20">
-      <div className="text-center max-w-xl mx-auto mb-10">
+    <section className="container-page py-12 sm:py-20">
+      <div className="text-center max-w-xl mx-auto mb-8 sm:mb-10">
         <span className="eyebrow uppercase tracking-[0.2em] text-xs font-bold text-gold">Kingdom Catalog</span>
-        <h2 className="font-display text-4xl sm:text-5xl mt-1 text-foreground font-semibold">Shop by Category</h2>
-        <p className="text-muted-foreground text-sm mt-2">Discover curated Himalayan harvests grouped by ancient traditional categories</p>
+        <h2 className="font-display text-3xl sm:text-5xl mt-1 text-foreground font-semibold">Shop by Category</h2>
+        <p className="text-muted-foreground text-xs sm:text-sm mt-1.5 sm:mt-2">Discover curated Himalayan harvests grouped by ancient traditional categories</p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-4 lg:gap-6 max-w-6xl mx-auto">
+      {/* Touch-swipe horizontal rail on mobile, grid on tablet & desktop */}
+      <div className="flex sm:grid overflow-x-auto sm:overflow-visible gap-3 sm:gap-4 lg:gap-6 pb-3 sm:pb-0 scrollbar-none sm:grid-cols-4 md:grid-cols-7 max-w-6xl mx-auto px-1">
         {cats.map((c) => (
           <Link
             key={c.id}
             to="/category/$slug"
             params={{ slug: c.slug }}
-            className="group flex flex-col items-center text-center transition-transform hover:-translate-y-1.5"
+            className="group flex flex-col items-center text-center transition-transform hover:-translate-y-1.5 shrink-0 w-24 sm:w-auto"
           >
-            <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden bg-[#FAF6F0] p-1.5 border-2 border-[#E8E2D7] group-hover:border-gold group-hover:shadow-hover transition-all shadow-soft flex items-center justify-center">
+            <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden bg-[#FAF6F0] p-1 sm:p-1.5 border-2 border-[#E8E2D7] group-hover:border-gold group-hover:shadow-hover transition-all shadow-soft flex items-center justify-center">
               <img
                 src={resolveCategoryAsset(c.slug, c.image_url)}
                 alt={c.name}
@@ -252,7 +253,7 @@ function Categories() {
                 className="h-full w-full object-cover rounded-full group-hover:scale-105 transition-transform duration-500"
               />
             </div>
-            <div className="mt-3.5 text-xs sm:text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">
+            <div className="mt-2.5 sm:mt-3.5 text-xs sm:text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-2">
               {c.name}
             </div>
           </Link>
@@ -318,15 +319,15 @@ function CuratedShowcase() {
   }, [products, activeTab]);
 
   return (
-    <section className="container-page py-16">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+    <section className="container-page py-12 sm:py-16">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-8">
         <div>
           <span className="eyebrow text-xs uppercase font-bold text-gold">Curated Harvest</span>
-          <h2 className="font-display text-4xl sm:text-5xl mt-1 text-foreground font-semibold">Featured Treasures</h2>
+          <h2 className="font-display text-3xl sm:text-5xl mt-1 text-foreground font-semibold">Featured Treasures</h2>
         </div>
 
-        {/* Filter Pills */}
-        <div className="flex flex-wrap gap-2">
+        {/* Filter Pills with touch scrolling */}
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none sm:flex-wrap">
           {[
             { id: "all", label: "All Harvest" },
             { id: "honey", label: "Wild Honey" },
@@ -336,7 +337,7 @@ function CuratedShowcase() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-4 py-2 rounded-full text-xs font-semibold border transition ${
+              className={`px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs font-semibold border transition shrink-0 whitespace-nowrap ${
                 activeTab === tab.id
                   ? "bg-primary text-primary-foreground border-primary shadow-soft"
                   : "border-border bg-card text-muted-foreground hover:bg-muted"
@@ -348,7 +349,7 @@ function CuratedShowcase() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
         {filtered.slice(0, 8).map((p) => (
           <ProductCard key={p.id} product={p as any} />
         ))}
@@ -371,20 +372,20 @@ function FarmStory() {
   return (
     <section className="container-page py-16 sm:py-20">
       <div className="grid lg:grid-cols-2 gap-8 items-stretch">
-        <div className="relative rounded-3xl overflow-hidden min-h-[480px] shadow-card border border-border">
+        <div className="relative rounded-3xl overflow-hidden min-h-[400px] sm:min-h-[480px] shadow-card border border-border">
           <img src={farmer} alt="Bhutanese farmer in pristine organic garden" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/75 to-primary/20" />
-          <div className="absolute bottom-8 left-8 right-8 text-primary-foreground">
+          <div className="absolute bottom-5 left-5 right-5 sm:bottom-8 sm:left-8 sm:right-8 text-primary-foreground">
             <span className="eyebrow text-gold font-bold text-xs uppercase tracking-wider">Himalayan Heritage</span>
-            <h3 className="font-display text-3xl sm:text-4xl mt-2 leading-tight drop-shadow-md font-bold">
+            <h3 className="font-display text-2xl sm:text-4xl mt-1.5 sm:mt-2 leading-tight drop-shadow-md font-bold">
               From Our High Valleys <br />to Your Family Table
             </h3>
-            <p className="text-sm opacity-90 mt-3 max-w-sm leading-relaxed">
+            <p className="text-xs sm:text-sm opacity-90 mt-2 sm:mt-3 max-w-sm leading-relaxed">
               We partner directly with family farms across Bumthang, Tsirang, and Punakha to preserve traditional, chemical-free agricultural wisdom.
             </p>
             <Link
               to="/story"
-              className="inline-flex mt-6 items-center gap-2 bg-cream text-primary px-6 py-3 rounded-full text-xs font-bold hover:gap-3 transition-all shadow-lg"
+              className="inline-flex mt-4 sm:mt-6 items-center gap-2 bg-cream text-primary px-5 py-2.5 sm:px-6 sm:py-3 rounded-full text-xs font-bold hover:gap-3 transition-all shadow-lg"
             >
               <span>Our Sustainable Philosophy</span>
               <ArrowRight className="h-4 w-4" />
@@ -560,13 +561,13 @@ function Trust() {
 
   return (
     <section className="bg-primary text-primary-foreground py-10 border-t border-gold/20">
-      <div className="container-page grid grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="container-page grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {items.map((it) => (
           <div key={it.title} className="flex items-center gap-3">
             <ShieldCheck className="h-6 w-6 text-gold shrink-0" />
             <div>
-              <div className="font-bold text-gold text-sm">{it.title}</div>
-              <div className="text-xs opacity-80 mt-0.5">{it.desc}</div>
+              <div className="font-bold text-gold text-xs sm:text-sm">{it.title}</div>
+              <div className="text-[11px] sm:text-xs opacity-80 mt-0.5">{it.desc}</div>
             </div>
           </div>
         ))}

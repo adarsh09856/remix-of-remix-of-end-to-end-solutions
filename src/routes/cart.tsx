@@ -40,13 +40,13 @@ function CartPage() {
   const total = subtotal + shipping;
 
   return (
-    <div className="container-page py-12">
-      <h1 className="font-display text-4xl mb-8">Your Cart</h1>
-      <div className="grid lg:grid-cols-3 gap-10">
-        <div className="lg:col-span-2 space-y-4">
+    <div className="container-page py-8 sm:py-12">
+      <h1 className="font-display text-2xl sm:text-4xl mb-6 sm:mb-8 font-bold">Your Cart</h1>
+      <div className="grid lg:grid-cols-3 gap-6 sm:gap-10">
+        <div className="lg:col-span-2 space-y-3 sm:space-y-4">
           {rows.map((r: any) => (
-            <div key={r.id} className="flex gap-4 bg-card border border-border rounded-2xl p-4">
-              <Link to="/product/$slug" params={{ slug: r.product.slug }} className="relative h-24 w-24 rounded-xl overflow-hidden product-stage shrink-0">
+            <div key={r.id} className="flex gap-3 sm:gap-4 bg-card border border-border rounded-2xl p-3 sm:p-4">
+              <Link to="/product/$slug" params={{ slug: r.product.slug }} className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-xl overflow-hidden product-stage shrink-0">
                 {r.product.image_url && <img src={resolveAsset(r.product.image_url)} alt={r.product.name} className="absolute inset-0 h-full w-full object-contain" />}
               </Link>
 

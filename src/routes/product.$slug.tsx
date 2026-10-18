@@ -96,8 +96,8 @@ function ProductPage() {
               {product.badge}
             </span>
           )}
-          <h1 className="font-display text-4xl md:text-5xl mt-3 leading-tight">{product.name}</h1>
-          {product.tagline && <p className="text-muted-foreground mt-2">{product.tagline}</p>}
+          <h1 className="font-display text-2xl sm:text-3xl md:text-5xl mt-3 leading-tight font-bold">{product.name}</h1>
+          {product.tagline && <p className="text-muted-foreground mt-2 text-sm sm:text-base">{product.tagline}</p>}
 
           {(() => {
             const price = pickPrice(product, country);
@@ -107,19 +107,19 @@ function ProductPage() {
             const lowAt = Number((product as any).low_stock_threshold ?? 5);
             return (
               <>
-                <div className="mt-6 flex flex-wrap items-baseline gap-2">
-                  <span className="text-3xl font-semibold text-primary">{formatMoney(price, country)}</span>
+                <div className="mt-5 sm:mt-6 flex flex-wrap items-baseline gap-2">
+                  <span className="text-2xl sm:text-3xl font-semibold text-primary">{formatMoney(price, country)}</span>
                   {onSale && (
                     <>
-                      <span className="text-base text-muted-foreground line-through">{formatMoney(compareAt!, country)}</span>
-                      <span className="rounded-full bg-gold px-2 py-0.5 text-[11px] font-semibold text-gold-foreground">
+                      <span className="text-sm sm:text-base text-muted-foreground line-through">{formatMoney(compareAt!, country)}</span>
+                      <span className="rounded-full bg-gold px-2 py-0.5 text-[10px] sm:text-[11px] font-semibold text-gold-foreground">
                         {Math.round(((compareAt! - price) / compareAt!) * 100)}% off
                       </span>
                     </>
                   )}
-                  <span className="text-sm text-muted-foreground">/ {product.unit}</span>
+                  <span className="text-xs sm:text-sm text-muted-foreground">/ {product.unit}</span>
                 </div>
-                <div className="mt-2 text-sm font-semibold">
+                <div className="mt-2 text-xs sm:text-sm font-semibold">
                   {stock <= 0 ? (
                     <span className="text-destructive">Out of stock — currently unavailable</span>
                   ) : stock <= lowAt ? (
@@ -132,7 +132,7 @@ function ProductPage() {
             );
           })()}
 
-          <div className="mt-5 rounded-2xl border border-border bg-card p-4">
+          <div className="mt-5 rounded-2xl border border-border bg-card p-3.5 sm:p-4">
             <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Ship to & price in</div>
             <div className="grid grid-cols-3 gap-2">
               {COUNTRIES.map((c) => (
@@ -140,10 +140,10 @@ function ProductPage() {
                   key={c.code}
                   type="button"
                   onClick={() => setCountry(c.code)}
-                  className={`rounded-lg border px-3 py-2 text-left transition ${country === c.code ? "border-primary bg-primary/5" : "border-border hover:border-primary"}`}
+                  className={`rounded-lg border px-2.5 sm:px-3 py-2 text-left transition ${country === c.code ? "border-primary bg-primary/5" : "border-border hover:border-primary"}`}
                 >
                   <span className="text-lg leading-none">{c.flag}</span>
-                  <div className="mt-1 text-xs font-semibold">{c.name}</div>
+                  <div className="mt-1 text-xs font-semibold truncate">{c.name}</div>
                   <div className="text-[10px] text-muted-foreground">{c.currency} · {c.symbol}</div>
                 </button>
               ))}
@@ -152,26 +152,43 @@ function ProductPage() {
           </div>
 
           {product.description && (
-            <p className="mt-6 text-foreground/80 leading-relaxed whitespace-pre-line">{product.description}</p>
+            <p className="mt-6 text-foreground/80 leading-relaxed whitespace-pre-line text-sm sm:text-base">{product.description}</p>
           )}
 
-          <div className="mt-8 flex items-center gap-4">
-            <div className="flex items-center border border-border rounded-full">
-              <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="p-3 hover:bg-muted rounded-l-full"><Minus className="h-4 w-4" /></button>
-              <span className="w-10 text-center font-medium">{qty}</span>
-              <button onClick={() => setQty((q) => Math.min(99, q + 1))} className="p-3 hover:bg-muted rounded-r-full"><Plus className="h-4 w-4" /></button>
+          <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+            <div className="flex items-center justify-center border border-border rounded-full bg-card">
+              <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="p-3 hover:bg-muted rounded-l-full min-w-[44px] min-h-[44px] flex items-center justify-center"><Minus className="h-4 w-4" /></button>
+              <span className="w-12 text-center font-bold text-sm">{qty}</span>
+              <button onClick={() => setQty((q) => Math.min(99, q + 1))} className="p-3 hover:bg-muted rounded-r-full min-w-[44px] min-h-[44px] flex items-center justify-center"><Plus className="h-4 w-4" /></button>
             </div>
-            <button onClick={handleAdd} className="btn-hero flex-1 max-w-xs">
+            <button onClick={handleAdd} className="btn-hero flex-1 min-h-[46px] w-full sm:max-w-xs justify-center">
               <ShoppingBag className="h-4 w-4" /> Add to Cart
             </button>
           </div>
 
-          <ul className="mt-10 space-y-3 text-sm border-t border-border pt-6">
-            <li className="flex items-center gap-3"><Leaf className="h-4 w-4 text-primary" /> 100% natural, chemical-free</li>
-            <li className="flex items-center gap-3"><ShieldCheck className="h-4 w-4 text-primary" /> Sourced directly from Bhutanese farmers</li>
-            <li className="flex items-center gap-3"><Truck className="h-4 w-4 text-primary" /> Free shipping on orders over Nu. 1,500</li>
+          <ul className="mt-8 sm:mt-10 space-y-3 text-xs sm:text-sm border-t border-border pt-6">
+            <li className="flex items-center gap-3"><Leaf className="h-4 w-4 text-primary shrink-0" /> 100% natural, chemical-free</li>
+            <li className="flex items-center gap-3"><ShieldCheck className="h-4 w-4 text-primary shrink-0" /> Sourced directly from Bhutanese farmers</li>
+            <li className="flex items-center gap-3"><Truck className="h-4 w-4 text-primary shrink-0" /> Free shipping on orders over Nu. 1,500</li>
           </ul>
         </div>
+      </div>
+
+      {/* Sticky Mobile Add-to-Cart Bar */}
+      <div className="lg:hidden fixed bottom-[57px] left-0 right-0 z-30 bg-[#FAF6EE]/95 backdrop-blur-md border-t border-[#EADFCB] px-4 py-2.5 flex items-center justify-between gap-3 shadow-lg">
+        <div className="min-w-0 flex-1">
+          <div className="font-display text-base font-bold text-foreground truncate">
+            {formatMoney(pickPrice(product, country), country)}
+          </div>
+          <div className="text-[10px] text-muted-foreground truncate">{product.name}</div>
+        </div>
+        <button
+          onClick={handleAdd}
+          className="rounded-full bg-[#1F3D2B] text-[#FAF6EE] px-5 py-2.5 text-xs font-bold shadow-soft flex items-center gap-1.5 shrink-0 active:scale-95"
+        >
+          <ShoppingBag className="h-3.5 w-3.5" />
+          <span>Add to Basket</span>
+        </button>
       </div>
     </div>
   );

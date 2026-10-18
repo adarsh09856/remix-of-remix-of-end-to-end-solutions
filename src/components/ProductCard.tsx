@@ -74,31 +74,31 @@ export function ProductCard({ product }: { product: Product }) {
           />
         )}
 
-        {/* Quick add floating action button */}
+        {/* Quick add floating action button (desktop only to prevent mobile clutter) */}
         <button
           onClick={handleAdd}
           disabled={outOfStock}
           aria-label={`Quick add ${product.name}`}
-          className="absolute bottom-3 right-3 z-10 h-8 w-8 grid place-items-center rounded-full bg-[#163820] text-white shadow-md hover:bg-[#0f2816] transition-transform active:scale-95 disabled:opacity-40"
+          className="hidden sm:grid absolute bottom-3 right-3 z-10 h-8 w-8 place-items-center rounded-full bg-[#163820] text-white shadow-md hover:bg-[#0f2816] transition-transform active:scale-95 disabled:opacity-40"
         >
           <ShoppingBag className="h-4 w-4" />
         </button>
       </Link>
 
-      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
+      <div className="p-3 sm:p-4 md:p-5 flex-1 flex flex-col justify-between">
         <div>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-h-[16px]">
-            <Star className="h-3.5 w-3.5 fill-[#D4A373] text-[#D4A373]" />
+            <Star className="h-3.5 w-3.5 fill-[#D4A373] text-[#D4A373] shrink-0" />
             <span className="font-bold text-foreground text-xs">{rating > 0 ? rating.toFixed(1) : "4.9"}</span>
-            <span className="text-muted-foreground font-normal">· {product.rating_count ?? 32} reviews</span>
+            <span className="text-muted-foreground font-normal text-[11px] truncate">· {product.rating_count ?? 32} reviews</span>
           </div>
 
           <Link to="/product/$slug" params={{ slug: product.slug }}>
-            <h3 className="font-display text-lg font-semibold text-foreground leading-snug mt-1.5 line-clamp-1 group-hover:text-primary transition-colors">
+            <h3 className="font-display text-sm sm:text-base md:text-lg font-semibold text-foreground leading-snug mt-1.5 line-clamp-2 sm:line-clamp-1 group-hover:text-primary transition-colors">
               {product.name}
             </h3>
           </Link>
-          <div className="mt-1 text-xs font-medium text-[#2E7D32]">
+          <div className="mt-1 text-[11px] sm:text-xs font-medium text-[#2E7D32]">
             {outOfStock ? (
               <span className="text-destructive">Out of stock</span>
             ) : lowStock ? (
@@ -108,22 +108,29 @@ export function ProductCard({ product }: { product: Product }) {
             )}
           </div>
           {product.tagline && (
-            <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{product.tagline}</p>
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 line-clamp-1 hidden sm:block">{product.tagline}</p>
           )}
         </div>
 
-        <div className="mt-4 pt-2 flex items-center justify-between gap-2 border-t border-border/30">
+        <div className="mt-3 pt-2.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-t border-border/40">
           <div className="flex min-w-0 items-baseline gap-x-1">
-            <span className="font-display text-xl font-bold text-foreground whitespace-nowrap">{formatMoney(price, country)}</span>
-            {onSale && <span className="text-xs text-muted-foreground line-through">{formatMoney(compareAt!, country)}</span>}
-            <span className="text-xs text-muted-foreground truncate">/ {product.unit}</span>
+            <span className="font-display text-base sm:text-lg md:text-xl font-bold text-foreground whitespace-nowrap">
+              {formatMoney(price, country)}
+            </span>
+            {onSale && (
+              <span className="text-[10px] sm:text-xs text-muted-foreground line-through">
+                {formatMoney(compareAt!, country)}
+              </span>
+            )}
+            <span className="text-[10px] sm:text-xs text-muted-foreground truncate">/ {product.unit}</span>
           </div>
           <button
             onClick={handleAdd}
             disabled={outOfStock}
-            className="shrink-0 rounded-full bg-[#EFECE6] text-[#163820] hover:bg-[#163820] hover:text-white px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-40"
+            className="w-full sm:w-auto shrink-0 rounded-full bg-[#163820] text-white sm:bg-[#EFECE6] sm:text-[#163820] sm:hover:bg-[#163820] sm:hover:text-white px-3 py-2 sm:py-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-40 flex items-center justify-center gap-1 active:scale-95 min-h-[36px] sm:min-h-0"
           >
-            {outOfStock ? "Sold out" : "+ ADD"}
+            <ShoppingBag className="h-3 w-3 sm:hidden" />
+            <span>{outOfStock ? "Sold out" : "+ ADD"}</span>
           </button>
         </div>
       </div>

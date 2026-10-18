@@ -10,6 +10,7 @@ import {
   Copy,
   Check,
   ChevronDown,
+  ChevronRight,
   ArrowRight,
   ExternalLink,
   Star,
@@ -516,6 +517,27 @@ export function Header() {
     };
   }, []);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
+  // Handle ESC key for mobile menu
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && mobileMenuOpen) setMobileMenuOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mobileMenuOpen]);
+
   const navLinks = [
     { to: "/", label: "Home", exact: true },
     { to: "/shop", label: "Shop", isMega: true },
@@ -603,21 +625,21 @@ export function Header() {
               {/* Currency Selector */}
               <CountrySelector compact />
 
-              {/* Search Icon */}
+              {/* Search Icon - visible on desktop and tablet */}
               <button
                 type="button"
                 onClick={() => setSearchOpen(true)}
                 aria-label="Search Bhutanese Harvest"
-                className="p-2 sm:p-2.5 rounded-full text-[#3A2A20]/80 hover:text-[#1F3D2B] hover:bg-[#F0E8D8] transition"
+                className="hidden sm:inline-flex p-2 sm:p-2.5 rounded-full text-[#3A2A20]/80 hover:text-[#1F3D2B] hover:bg-[#F0E8D8] transition"
               >
                 <Search className="h-5 w-5" />
               </button>
 
-              {/* Account Icon */}
+              {/* Account Icon - visible on desktop and tablet */}
               <a
                 href={userId ? "/account" : "/auth"}
                 aria-label={userId ? "My Account" : "Sign In"}
-                className="p-2 sm:p-2.5 rounded-full text-[#3A2A20]/80 hover:text-[#1F3D2B] hover:bg-[#F0E8D8] transition"
+                className="hidden sm:inline-flex p-2 sm:p-2.5 rounded-full text-[#3A2A20]/80 hover:text-[#1F3D2B] hover:bg-[#F0E8D8] transition"
               >
                 <User className="h-5 w-5" />
               </a>
@@ -653,43 +675,163 @@ export function Header() {
         {/* Mega Menu Dropdown */}
         <ShopMegaMenu isOpen={megaMenuOpen} onClose={() => setMegaMenuOpen(false)} />
 
-        {/* Mobile Navigation Drawer */}
+        {/* Mobile Navigation Drawer Sheet (App-style slide-over) */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-[#FAF6EE] border-b border-[#EADFCB] px-4 py-5 shadow-xl animate-fade-in">
-            <nav className="flex flex-col gap-2">
-              {navLinks.map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="px-3 py-2.5 rounded-xl text-sm font-medium text-[#3A2A20] hover:bg-[#F0E8D8] transition"
-                  activeProps={{ className: "bg-[#F0E8D8] text-[#1F3D2B] font-semibold" }}
-                  activeOptions={{ exact: Boolean(item.exact) }}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
+          <div className="fixed inset-0 z-50 lg:hidden overflow-hidden">
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 bg-[#3A2A20]/50 backdrop-blur-sm transition-opacity duration-300"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-hidden="true"
+            />
 
-            <div className="mt-5 pt-4 border-t border-[#EADFCB] flex flex-col gap-2.5 text-xs text-[#3A2A20]/75">
-              <a
-                href="https://wa.me/918514889385"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 text-[#1F3D2B] font-semibold"
-              >
-                <Phone className="h-4 w-4 text-[#C98A1B]" />
-                WhatsApp Care: +91-8514889385
-              </a>
-              <a
-                href="tel:+97517970050"
-                className="inline-flex items-center gap-2 text-[#3A2A20]/80 hover:text-[#1F3D2B]"
-              >
-                HQ Operations: +975-1797-0050
-              </a>
-              <p className="text-[11px] text-[#3A2A20]/60">
-                Pan-Bhutan express shipping across all 20 Dzongkhags.
-              </p>
+            {/* Sliding Drawer Sheet */}
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Navigation Menu"
+              className="fixed inset-y-0 left-0 w-[88vw] max-w-sm bg-[#FAF6EE] text-[#3A2A20] shadow-[0_20px_60px_rgba(31,61,43,0.25)] border-r border-[#EADFCB] flex flex-col justify-between animate-in slide-in-from-left duration-300"
+            >
+              {/* Header */}
+              <div className="p-4 border-b border-[#EADFCB] bg-[#FFFFFF] flex items-center justify-between shrink-0">
+                <Link
+                  to="/"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2.5"
+                >
+                  <img
+                    src={logo}
+                    alt="Takin Mart"
+                    className="h-9 w-9 rounded-full object-contain"
+                  />
+                  <div>
+                    <span className="font-serif text-lg font-bold text-[#1F3D2B] leading-none block">
+                      Takin <span className="italic text-[#C98A1B]">Mart</span>
+                    </span>
+                    <span className="block text-[8px] uppercase tracking-[0.2em] text-[#3A2A20]/65 mt-0.5 font-medium">
+                      Bhutan Agro-Wellness
+                    </span>
+                  </div>
+                </Link>
+
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-2 rounded-full text-[#736357] hover:text-[#1F3D2B] hover:bg-[#F0E8D8] transition min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+                  aria-label="Close navigation menu"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Scrollable Drawer Body */}
+              <div className="p-4 flex-1 overflow-y-auto space-y-5">
+                {/* Search Bar Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setSearchOpen(true);
+                  }}
+                  className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border border-[#EADFCB] bg-[#FFFFFF] text-left text-xs text-[#3A2A20]/60 hover:border-[#1F3D2B] transition shadow-inner"
+                >
+                  <Search className="h-4 w-4 text-[#C98A1B] shrink-0" />
+                  <span className="truncate">Search honey, shilajit, cordyceps, red rice...</span>
+                </button>
+
+                {/* Primary Nav Links */}
+                <div>
+                  <div className="text-[10px] uppercase font-bold tracking-wider text-[#3A2A20]/50 mb-2 px-1">
+                    Main Navigation
+                  </div>
+                  <nav className="flex flex-col gap-1">
+                    {navLinks.map((item) => (
+                      <Link
+                        key={item.to}
+                        to={item.to}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="px-3 py-2.5 rounded-xl text-sm font-medium text-[#3A2A20] hover:bg-[#F0E8D8] transition flex items-center justify-between"
+                        activeProps={{ className: "bg-[#F0E8D8] text-[#1F3D2B] font-semibold" }}
+                        activeOptions={{ exact: Boolean(item.exact) }}
+                      >
+                        <span>{item.label}</span>
+                        <ChevronRight className="h-4 w-4 text-[#3A2A20]/40" />
+                      </Link>
+                    ))}
+                  </nav>
+                </div>
+
+                {/* Categories Browser */}
+                <div>
+                  <div className="flex items-center justify-between mb-2.5 px-1">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-[#3A2A20]/50">
+                      Browse Categories
+                    </span>
+                    <Link
+                      to="/shop"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="text-[11px] text-[#1F3D2B] font-semibold hover:underline"
+                    >
+                      All ({FALLBACK_CATEGORIES.length})
+                    </Link>
+                  </div>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {FALLBACK_CATEGORIES.map((cat) => (
+                      <Link
+                        key={cat.id}
+                        to="/category/$slug"
+                        params={{ slug: cat.slug }}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 p-2 rounded-xl hover:bg-[#F0E8D8] transition group bg-[#FFFFFF]/60 border border-[#EADFCB]/60"
+                      >
+                        <div className="h-10 w-10 rounded-lg overflow-hidden bg-white p-0.5 border border-[#EADFCB] shrink-0">
+                          <img
+                            src={resolveCategoryAsset(cat.slug, cat.image_url)}
+                            alt={cat.name}
+                            className="h-full w-full object-cover rounded-md group-hover:scale-105 transition-transform"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-semibold text-[#1F3D2B] truncate group-hover:text-[#C98A1B] transition-colors">
+                            {cat.name}
+                          </div>
+                          <div className="text-[10px] text-[#736357] truncate">
+                            {cat.description}
+                          </div>
+                        </div>
+                        <ChevronRight className="h-3.5 w-3.5 text-[#3A2A20]/30 shrink-0" />
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Account / Auth Link */}
+                <div className="pt-2 border-t border-[#EADFCB]">
+                  <a
+                    href={userId ? "/account" : "/auth"}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2.5 px-3 py-3 rounded-xl bg-[#F0E8D8]/70 text-xs font-semibold text-[#1F3D2B] hover:bg-[#F0E8D8] transition"
+                  >
+                    <User className="h-4 w-4 text-[#C98A1B]" />
+                    <span>{userId ? "My Account & Orders" : "Sign In / Register"}</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Footer Desks in Drawer */}
+              <div className="p-4 border-t border-[#EADFCB] bg-[#FFFFFF] space-y-2 shrink-0">
+                <a
+                  href="https://wa.me/918514889385"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-600/30 font-semibold text-xs"
+                >
+                  <Phone className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>WhatsApp Care: +91-8514889385</span>
+                </a>
+                <div className="text-center text-[10px] text-[#736357]">
+                  Bhutan HQ: +975-1797-0050 · Shipping to 20 Dzongkhags
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -708,12 +850,13 @@ export function Header() {
       {/* Mobile Bottom Navigation Bar (Home, Shop, Search, Cart, Account) */}
       <nav
         aria-label="Mobile Navigation"
-        className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-[#FAF6EE]/95 backdrop-blur-md border-t border-[#EADFCB] px-3 py-2 flex items-center justify-around text-[#3A2A20] pb-[calc(0.5rem+env(safe-area-inset-bottom))]"
+        className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-[#FAF6EE]/95 backdrop-blur-md border-t border-[#EADFCB] px-2 py-1 flex items-center justify-around text-[#3A2A20] pb-[calc(0.5rem+env(safe-area-inset-bottom))]"
       >
         <Link
           to="/"
-          className="flex flex-col items-center gap-1 text-[10px] font-medium hover:text-[#1F3D2B] transition"
+          className="flex flex-col items-center justify-center gap-0.5 min-w-[50px] min-h-[44px] py-1 text-[10px] font-medium text-[#3A2A20]/80 hover:text-[#1F3D2B] transition"
           activeProps={{ className: "text-[#1F3D2B] font-bold" }}
+          activeOptions={{ exact: true }}
         >
           <HomeIcon className="h-5 w-5" />
           <span>Home</span>
@@ -721,7 +864,7 @@ export function Header() {
 
         <Link
           to="/shop"
-          className="flex flex-col items-center gap-1 text-[10px] font-medium hover:text-[#1F3D2B] transition"
+          className="flex flex-col items-center justify-center gap-0.5 min-w-[50px] min-h-[44px] py-1 text-[10px] font-medium text-[#3A2A20]/80 hover:text-[#1F3D2B] transition"
           activeProps={{ className: "text-[#1F3D2B] font-bold" }}
         >
           <Sparkles className="h-5 w-5" />
@@ -731,7 +874,8 @@ export function Header() {
         <button
           type="button"
           onClick={() => setSearchOpen(true)}
-          className="flex flex-col items-center gap-1 text-[10px] font-medium hover:text-[#1F3D2B] transition"
+          className="flex flex-col items-center justify-center gap-0.5 min-w-[50px] min-h-[44px] py-1 text-[10px] font-medium text-[#3A2A20]/80 hover:text-[#1F3D2B] transition"
+          aria-label="Open search"
         >
           <Search className="h-5 w-5" />
           <span>Search</span>
@@ -740,20 +884,23 @@ export function Header() {
         <button
           type="button"
           onClick={() => setCartDrawerOpen(true)}
-          className="relative flex flex-col items-center gap-1 text-[10px] font-medium hover:text-[#1F3D2B] transition"
+          className="relative flex flex-col items-center justify-center gap-0.5 min-w-[50px] min-h-[44px] py-1 text-[10px] font-medium text-[#3A2A20]/80 hover:text-[#1F3D2B] transition"
+          aria-label={`Open shopping cart with ${cartCount} items`}
         >
-          <ShoppingBag className="h-5 w-5" />
-          {cartCount > 0 && (
-            <span className="absolute -top-1 right-2 bg-[#C98A1B] text-[#1F3D2B] text-[9px] font-bold rounded-full h-4 w-4 grid place-items-center">
-              {cartCount}
-            </span>
-          )}
+          <div className="relative">
+            <ShoppingBag className="h-5 w-5" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-2 bg-[#C98A1B] text-[#1F3D2B] text-[9px] font-bold rounded-full h-4 w-4 grid place-items-center">
+                {cartCount}
+              </span>
+            )}
+          </div>
           <span>Cart</span>
         </button>
 
         <a
           href={userId ? "/account" : "/auth"}
-          className="flex flex-col items-center gap-1 text-[10px] font-medium hover:text-[#1F3D2B] transition"
+          className="flex flex-col items-center justify-center gap-0.5 min-w-[50px] min-h-[44px] py-1 text-[10px] font-medium text-[#3A2A20]/80 hover:text-[#1F3D2B] transition"
         >
           <User className="h-5 w-5" />
           <span>{userId ? "Account" : "Sign In"}</span>

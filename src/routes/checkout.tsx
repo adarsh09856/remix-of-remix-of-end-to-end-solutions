@@ -127,7 +127,7 @@ function CheckoutForm() {
   const discount = Math.min(coupon?.discount ?? 0, subtotal);
   const total = Math.max(0, subtotal - discount) + shipping;
 
-  const input = "w-full bg-card border border-border rounded-lg px-4 py-3 text-sm outline-none focus:border-primary";
+  const input = "w-full bg-card border border-border rounded-xl px-4 py-3 text-base sm:text-sm outline-none focus:border-primary transition";
 
   if (!user) {
     return (

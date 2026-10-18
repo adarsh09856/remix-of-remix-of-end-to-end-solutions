@@ -101,8 +101,8 @@ export function CartDrawer({
         aria-hidden="true"
       />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-[#FAF6EE] text-[#3A2A20] shadow-[0_20px_60px_rgba(31,61,43,0.18)] border-l border-[rgba(58,42,32,0.12)] flex flex-col justify-between animate-in slide-in-from-right duration-300">
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
+        <div className="w-screen max-w-full sm:max-w-md bg-[#FAF6EE] text-[#3A2A20] shadow-[0_20px_60px_rgba(31,61,43,0.18)] border-l border-[rgba(58,42,32,0.12)] flex flex-col justify-between animate-in slide-in-from-right duration-300">
           {/* Header */}
           <div className="p-5 border-b border-[rgba(58,42,32,0.12)] bg-[#FFFFFF] flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -315,7 +315,7 @@ export function CartDrawer({
 
           {/* Footer & Checkout Area */}
           {items.length > 0 && (
-            <div className="p-5 border-t border-[rgba(58,42,32,0.12)] bg-[#FFFFFF] space-y-3.5 shadow-lg">
+            <div className="p-4 sm:p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] border-t border-[rgba(58,42,32,0.12)] bg-[#FFFFFF] space-y-3.5 shadow-lg shrink-0">
               {/* Promo Code Input */}
               <div className="flex gap-2">
                 <div className="relative flex-1">

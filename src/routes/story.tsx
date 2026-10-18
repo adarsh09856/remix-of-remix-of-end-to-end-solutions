@@ -15,15 +15,15 @@ export const Route = createFileRoute("/story")({
 
 function StoryPage() {
   return (
-    <div className="container-page py-16 max-w-4xl">
+    <div className="container-page py-10 sm:py-16 max-w-4xl">
       <div className="text-center">
         <span className="eyebrow">Our Story</span>
-        <h1 className="font-display text-5xl md:text-6xl mt-2">From Our Farms to Your Family</h1>
+        <h1 className="font-display text-3xl sm:text-5xl md:text-6xl mt-2 font-bold">From Our Farms to Your Family</h1>
       </div>
 
-      <div className="mt-12 grid md:grid-cols-2 gap-10 items-center">
+      <div className="mt-8 sm:mt-12 grid md:grid-cols-2 gap-8 sm:gap-10 items-center">
         <img src={farmer} alt="Bhutanese farmer with tea leaves" className="rounded-3xl" />
-        <div className="space-y-5 text-foreground/85 leading-relaxed">
+        <div className="space-y-4 sm:space-y-5 text-foreground/85 leading-relaxed text-sm sm:text-base">
           <p>
             Takin Mart began with a single basket of red rice carried down from the Paro Valley. We saw a small farming community whose produce was extraordinary — but whose reach barely extended past the next village.
           </p>
@@ -33,16 +33,16 @@ function StoryPage() {
         </div>
       </div>
 
-      <div className="mt-20 grid md:grid-cols-3 gap-6">
+      <div className="mt-12 sm:mt-20 grid sm:grid-cols-3 gap-4 sm:gap-6">
         {[
           { n: "01", t: "Source", d: "We work directly with farmer cooperatives across Bhutan's valleys and highlands." },
           { n: "02", t: "Test & Pack", d: "Every batch is hand-checked for quality, then sealed in protective packaging." },
           { n: "03", t: "Deliver", d: "Shipped securely across Bhutan with care and full traceability." },
         ].map((s) => (
-          <div key={s.n} className="bg-card border border-border rounded-2xl p-6">
-            <div className="font-display text-4xl text-gold">{s.n}</div>
-            <h3 className="font-display text-xl mt-3">{s.t}</h3>
-            <p className="text-sm text-muted-foreground mt-2">{s.d}</p>
+          <div key={s.n} className="bg-card border border-border rounded-2xl p-5 sm:p-6">
+            <div className="font-display text-3xl sm:text-4xl text-gold">{s.n}</div>
+            <h3 className="font-display text-lg sm:text-xl mt-2 sm:mt-3 font-semibold">{s.t}</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 sm:mt-2">{s.d}</p>
           </div>
         ))}
       </div>

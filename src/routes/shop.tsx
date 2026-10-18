@@ -122,11 +122,20 @@ function Shop() {
           </div>
 
           {/* Sort Controls */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center justify-between sm:justify-start gap-2 shrink-0">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
               <ArrowUpDown className="h-3.5 w-3.5" /> Sort:
             </span>
-            <div className="flex rounded-xl border border-border bg-card p-1 shadow-soft text-xs">
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as typeof sort)}
+              className="sm:hidden flex-1 rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground outline-none shadow-soft"
+            >
+              <option value="new">Featured</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+            </select>
+            <div className="hidden sm:flex rounded-xl border border-border bg-card p-1 shadow-soft text-xs">
               {[
                 ["new", "Featured"],
                 ["price-asc", "Price: Low to High"],
@@ -149,11 +158,11 @@ function Shop() {
           </div>
         </div>
 
-        {/* Category Pill Filters */}
-        <div className="flex flex-wrap items-center gap-2 mb-8">
+        {/* Category Pill Filters (Horizontally scrollable on mobile) */}
+        <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2 scrollbar-none sm:flex-wrap">
           <button
             onClick={() => setFilter(null)}
-            className={`px-4 py-2 rounded-full text-xs font-semibold border transition shadow-soft flex items-center gap-1.5 ${
+            className={`px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold border transition shadow-soft flex items-center gap-1.5 shrink-0 whitespace-nowrap ${
               !filter
                 ? "bg-primary text-primary-foreground border-primary"
                 : "bg-card border-border text-muted-foreground hover:border-primary hover:text-foreground"
@@ -171,7 +180,7 @@ function Shop() {
               <button
                 key={c.id || c.slug}
                 onClick={() => setFilter(active ? null : c.slug)}
-                className={`px-4 py-2 rounded-full text-xs font-semibold border transition shadow-soft flex items-center gap-1.5 ${
+                className={`px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold border transition shadow-soft flex items-center gap-1.5 shrink-0 whitespace-nowrap ${
                   active
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-card border-border text-muted-foreground hover:border-primary hover:text-foreground"
@@ -230,7 +239,7 @@ function Shop() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
             {filtered.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -238,7 +247,7 @@ function Shop() {
         )}
 
         {/* Guarantees Strip at bottom */}
-        <div className="mt-20 pt-10 border-t border-border grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div className="mt-16 sm:mt-20 pt-8 sm:pt-10 border-t border-border grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center">
           <div className="p-4 rounded-2xl bg-card border border-border">
             <ShieldCheck className="h-7 w-7 text-gold mx-auto mb-2" />
             <h4 className="font-semibold text-sm">BAFRA Certified</h4>
